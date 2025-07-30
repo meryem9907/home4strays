@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      body {
+        font-family: Verdana, sans-serif;
+        color: #333333;
+        margin: 0;
+        padding: 0;
+        background-color: #f9f9f9;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: #ffffff;
+        padding: 20px;
+        border: 1px solid #dddddd;
+      }
+      .button {
+        display: inline-block;
+        background-color: #d99a6c;
+        color: #ffffff;
+        padding: 10px 20px;
+        text-decoration: none;
+        border-radius: 5px;
+        font-weight: bold;
+      }
+      .footer {
+        font-size: 12px;
+        color: #777777;
+        margin-top: 30px;
+        line-height: 1.4;
+      }
+      .footer a {
+        color: #1e90ff;
+        text-decoration: none;
+      }
+      hr {
+        border: none;
+        border-top: 1px solid #eeeeee;
+        margin: 20px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <p>Привіт, {{name}}!</p>
+      <p>
+        Вас запросили приєднатися до платформи <strong>Home4Strays</strong> як
+        члена вашої НУО. Ви можете активувати свій обліковий запис за наступним
+        посиланням і почати одразу:
+      </p>
+      <p style="text-align: center">
+        <a href="{{inviteLink}}" class="button">Зареєструватися</a>
+      </p>
+      <p>
+        Якщо ви отримали цей лист помилково, просто проігноруйте його —
+        обліковий запис не буде створено, якщо ви не натиснете на посилання.
+      </p>
+      <p>
+        Це повідомлення було згенеровано автоматично. Будь ласка, не
+        відповідайте на цей лист.
+      </p>
+      <p>З повагою,<br />Команда Home4Strays</p>
+      <hr />
+      <div class="footer">
+        <p>
+          Home4Strays<br />
+          An der Hochschule 1 · 86161 Augsburg<br />
+          Електронна пошта: home4strays@obco.pro
+        </p>
+        <p>
+          <a href="https://home4strays.de/impressum">Правова інформація</a> |
+          <a href="https://home4strays.de/datenschutz"
+            >Політика конфіденційності</a
+          >
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,41 @@
+{
+  "keepSettings": {
+    "type": 1,
+    "amount": 30
+  },
+  "auditFilename": "audit.json",
+  "hashType": "md5",
+  "extension": ".log",
+  "files": [
+    {
+      "date": 1743260450266,
+      "name": "/home/yonggan/.tabby-client/agent/logs/20250329.0.log",
+      "hash": "602f3e32a7f81aa7220eab18759da747"
+    },
+    {
+      "date": 1743346724305,
+      "name": "/home/yonggan/.tabby-client/agent/logs/20250330.0.log",
+      "hash": "27eed613f877dafd287ad37b15f66c15"
+    },
+    {
+      "date": 1743365241843,
+      "name": "/home/yonggan/.tabby-client/agent/logs/20250330.1.log",
+      "hash": "c0162d638d2bd7d17381b4c1919b1ad6"
+    },
+    {
+      "date": 1744202676149,
+      "name": "/home/yonggan/.tabby-client/agent/logs/20250409.0.log",
+      "hash": "3853d3efaf8e9ae03104254f1b36f3f0"
+    },
+    {
+      "date": 1744303111196,
+      "name": "/home/yonggan/.tabby-client/agent/logs/20250410.1.log",
+      "hash": "fbabdd8a7c90570ba4a81323bd7349ec"
+    },
+    {
+      "date": 1744304426802,
+      "name": "/home/yonggan/.tabby-client/agent/logs/20250410.2.log",
+      "hash": "f76cb595523778cb82e0331364921436"
+    }
+  ]
+}

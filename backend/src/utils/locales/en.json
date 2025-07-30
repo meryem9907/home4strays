@@ -1,0 +1,66 @@
+{
+  "experience": {
+    "moreThan10Years": ">10 Years",
+    "moreThan5Years": ">5 Years",
+    "moreThan2Years": ">2 Years",
+    "moreThan1Year": ">1 Year",
+    "noExperience": "No Experience"
+  },
+  "tenure": {
+    "rented": "Rented",
+    "paid": "Paid",
+    "other": "Other"
+  },
+  "maritalStatus": {
+    "married": "Married",
+    "single": "Single",
+    "widowed": "Widowed",
+    "other": "Other"
+  },
+  "localityType": {
+    "urban": "Urban",
+    "rural": "Rural",
+    "other": "Other"
+  },
+  "residence": {
+    "house": "House",
+    "flat": "Flat",
+    "other": "Other"
+  },
+  "employment": {
+    "employed": "Employed",
+    "freelancer": "Freelancer",
+    "selfEmployed": "Self-employed",
+    "student": "Student",
+    "unemployed": "Unemployed",
+    "other": "Other"
+  },
+  "weekday": {
+    "monday": "Monday",
+    "tuesday": "Tuesday",
+    "wednesday": "Wednesday",
+    "thursday": "Thursday",
+    "friday": "Friday",
+    "saturday": "Saturday",
+    "sunday": "Sunday"
+  },
+  "gender": {
+    "male": "Male",
+    "female": "Female",
+    "diverse": "Diverse"
+  },
+  "behaviour": {
+    "shy": "shy",
+    "lively": "lively",
+    "vigilant": "vigilant",
+    "cautious": "cautious",
+    "sensitive": "sensitive",
+    "gentle": "gentle",
+    "defensive": "defensive",
+    "lazy": "lazy",
+    "playful": "playful",
+    "aggressive": "aggressive",
+    "obedient": "obedient",
+    "mischievous": "mischievous"
+  }
+}

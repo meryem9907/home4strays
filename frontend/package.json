@@ -1,0 +1,45 @@
+{
+  "name": "home4strays-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint:check": "next lint",
+    "lint:write": "next lint --fix",
+    "test": "jest --testTimeout=10000 --passWithNoTests",
+    "prepare": "husky install || true"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.80.7",
+    "daisyui": "^5.0.9",
+    "jest-environment-jsdom": "^29.7.0",
+    "lucide-react": "^0.487.0",
+    "next": "^15.2.4",
+    "next-intl": "^4.0.2",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-hot-toast": "^2.5.2",
+    "swiper": "^11.2.6",
+    "ts-jest": "^29.3.1",
+    "ts-node": "^10.9.2"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4.0.17",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "cross-env": "^7.0.3",
+    "eslint": "^9",
+    "eslint-config-next": "15.2.4",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.0",
+    "tailwindcss": "^4.0.17",
+    "typescript": "^5"
+  },
+  "lint-staged": {
+    "*.{js,ts,css,md,json}": "next lint --fix ."
+  }
+}

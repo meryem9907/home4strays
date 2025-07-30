@@ -1,0 +1,71 @@
+{
+  "experience": {
+    "moreThan10Years": "10 yıldan fazla",
+    "moreThan5Years": "5 yıldan fazla",
+    "moreThan2Years": "2 yıldan fazla",
+    "moreThan1Year": "1 yıldan fazla",
+    "noExperience": "Deneyim yok"
+  },
+  "tenure": {
+    "rented": "Kiralık",
+    "paid": "Satın alınmış",
+    "other": "Diğer"
+  },
+  "maritalStatus": {
+    "married": "Evli",
+    "single": "Bekar",
+    "widowed": "Dul",
+    "other": "Diğer"
+  },
+  "localityType": {
+    "urban": "Kentsel",
+    "rural": "Kırsal",
+    "other": "Diğer"
+  },
+  "residence": {
+    "house": "Ev",
+    "flat": "Daire",
+    "other": "Diğer"
+  },
+  "employment": {
+    "employed": "Çalışan",
+    "freelancer": "Serbest çalışan",
+    "selfEmployed": "Kendi işinde çalışan",
+    "student": "Öğrenci",
+    "unemployed": "İşsiz",
+    "other": "Diğer"
+  },
+  "weekday": {
+    "monday": "Pazartesi",
+    "tuesday": "Salı",
+    "wednesday": "Çarşamba",
+    "thursday": "Perşembe",
+    "friday": "Cuma",
+    "saturday": "Cumartesi",
+    "sunday": "Pazar"
+  },
+  "gender": {
+    "male": "Erkek",
+    "female": "Dişi",
+    "diverse": "Çeşitli"
+  },
+  "behaviour": {
+    "shy": "Utangaç",
+    "lively": "Canlı",
+    "vigilant": "Dikkatli",
+    "cautious": "Tedbirli",
+    "sensitive": "Hassas",
+    "gentle": "Nazik",
+    "defensive": "Savunmacı",
+    "lazy": "Tembel",
+    "playful": "Oyunbaz",
+    "aggressive": "Agresif",
+    "obedient": "İtaatkâr",
+    "mischievous": "Yaramaz"
+  },
+  "experience.moreThan10Years": "experience.moreThan10Years",
+  "experience.moreThan5Years": "experience.moreThan5Years",
+  "experience.moreThan2Years": "experience.moreThan2Years",
+  "experience.moreThan1Year": "experience.moreThan1Year",
+  "experience.noExperience": "experience.noExperience"
+}

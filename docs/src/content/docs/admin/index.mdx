@@ -1,0 +1,1146 @@
+---
+title: Administration Guide
+description: Umfassende Administrationsdokumentation für Home4Strays
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import { Code } from '@astrojs/starlight/components';
+
+# 🏠 Home4Strays Administration Guide
+
+Diese Dokumentation beschreibt die vollständige Administration der Home4Strays-Anwendung mit Docker Compose und Caddy als Reverse Proxy.
+
+## 📋 Überblick
+
+Das Home4Strays-System besteht aus folgenden Komponenten:
+- **🖥️ Frontend**: React/Next.js Anwendung
+- **⚙️ Backend**: API-Server
+- **🗄️ Datenbank**: PostgreSQL
+- **📦 MinIO**: S3-kompatible Object Storage
+- **🚀 Caddy**: Reverse Proxy und Web Server
+- **🔄 Watchtower**: Automatische Container-Updates
+- **📚 Docs**: Starlight-basierte Dokumentation
+
+## 📋 Voraussetzungen
+
+### 🐳 Docker Installation
+
+Bevor Sie beginnen, müssen Docker und Docker Compose auf Ihrem System installiert werden.
+
+:::note[📖 Offizielle Dokumentation]
+Für die neuesten und detailliertesten Installationsanweisungen besuchen Sie die [offizielle Docker-Dokumentation](https://docs.docker.com/engine/install/).
+:::
+
+<Tabs>
+<TabItem label="🐧 Ubuntu/Debian">
+
+```bash
+# Alte Docker-Versionen entfernen
+sudo apt-get remove docker docker-engine docker.io containerd runc
+
+# Repository hinzufügen
+sudo apt-get update
+sudo apt-get install ca-certificates curl gnupg lsb-release
+
+sudo mkdir -p /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+# Docker installieren
+sudo apt-get update
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin
+
+# Benutzer zur Docker-Gruppe hinzufügen
+sudo usermod -aG docker $USER
+```
+
+📖 **Detaillierte Anleitung**: [Docker Installation auf Ubuntu](https://docs.docker.com/engine/install/ubuntu/)
+
+</TabItem>
+<TabItem label="🎩 CentOS/RHEL/Fedora">
+
+```bash
+sudo dnf remove docker docker-client docker-client-latest docker-common docker-latest docker-latest-logrotate docker-logrotate docker-engine
+
+sudo dnf -y install dnf-plugins-core
+sudo dnf config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo
+
+sudo dnf install docker-ce docker-ce-cli containerd.io docker-compose-plugin
+sudo systemctl start docker
+sudo systemctl enable docker
+sudo usermod -aG docker $USER
+```
+
+📖 **Detaillierte Anleitung**: [Docker Installation auf CentOS/RHEL/Fedora](https://docs.docker.com/engine/install/centos/)
+
+</TabItem>
+</Tabs>
+
+:::note[⚠️ Wichtiger Hinweis]
+Nach der Installation loggen Sie sich ab und wieder ein, damit die Gruppenzugehörigkeit wirksam wird.
+:::
+
+### 🐳 Docker Grundlagen
+
+:::tip[📖 Weitere Informationen]
+Für eine umfassende Einführung in Docker besuchen Sie die [Docker Grundlagen Dokumentation](https://docs.docker.com/get-started/).
+:::
+
+#### 🔧 Wichtige Docker-Befehle
+
+```bash
+# Docker-Status prüfen
+docker --version
+docker compose version
+
+# Container anzeigen
+docker ps                    # Laufende Container
+docker ps -a                 # Alle Container
+
+# Images anzeigen
+docker images
+
+# Container-Logs anzeigen
+docker logs <container-name>
+docker logs -f <container-name>  # Follow-Modus
+
+# Container stoppen/starten
+docker stop <container-name>
+docker start <container-name>
+docker restart <container-name>
+
+# Container entfernen
+docker rm <container-name>
+docker rmi <image-name>       # Image entfernen
+
+# System aufräumen
+docker system prune -a        # Unbenutzte Container/Images entfernen
+```
+
+#### 🚀 Docker Compose Grundlagen
+
+```bash
+# Services starten
+docker compose up -d          # Im Hintergrund starten
+
+# Services stoppen
+docker compose down           # Container stoppen und entfernen
+docker compose stop           # Nur stoppen
+
+# Services neu starten
+docker compose restart
+
+# Logs anzeigen
+docker compose logs
+docker compose logs -f <service-name>
+
+# Konfiguration validieren
+docker compose config
+```
+
+:::tip[📖 Docker Compose Dokumentation]
+Mehr über Docker Compose erfahren Sie in der [offiziellen Docker Compose Dokumentation](https://docs.docker.com/compose/).
+:::
+
+## 📁 Verzeichnisstruktur
+
+Erstellen Sie folgende Verzeichnisstruktur auf Ihrem Server:
+
+```
+/opt/docker/
+├── compose/
+│   ├── docker-compose.yaml
+│   ├── .env
+│   └── caddy/
+│       ├── docker-compose.yaml
+│       ├── Caddyfile
+│       └── site/
+└── volumes/
+    ├── home4strays/
+    │   └── postgres/
+    ├── minio/
+    │   └── data/
+    ├── test-minio/
+    │   └── data/
+    └── caddy/
+        ├── data/
+        └── config/
+```
+
+```bash
+# 📁 Verzeichnisse erstellen
+sudo mkdir -p /opt/docker/{compose,volumes}/{home4strays/postgres,minio/data,test-minio/data,caddy/{data,config}}
+sudo mkdir -p /opt/docker/compose/caddy/site
+```
+
+## 🐳 Konsolidierte Docker Compose Konfiguration
+
+### 📄 Haupt-Docker-Compose-Datei
+
+Erstellen Sie `/opt/docker/compose/docker-compose.yaml`:
+
+```yaml
+version: '3.8'
+
+services:
+  # 🖥️ Frontend Services
+  frontend:
+    image: hub.informatik.hs-augsburg.de/home4strays/home4strays-frontend/image:main
+    ports:
+      - "127.0.0.1:3000:3000"
+    networks:
+      - caddy
+    environment:
+      - BACKEND_URL=https://api.example.org
+    hostname: home4strays-frontend
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  # ⚙️ Backend Services
+  backend:
+    image: hub.informatik.hs-augsburg.de/home4strays/home4strays-backend/image:main
+    ports:
+      - "127.0.0.1:3100:3000"
+    networks:
+      caddy:
+        aliases:
+          - minio
+      postgresql: {}
+    hostname: home4strays-backend
+    env_file: .env
+    depends_on:
+      - postgresql
+      - minio
+    restart: unless-stopped
+
+  # 🧪 Test Frontend (für Staging)
+  test-frontend:
+    image: hub.informatik.hs-augsburg.de/home4strays/home4strays-frontend/image:main
+    ports:
+      - "127.0.0.1:4000:3000"
+    networks:
+      - caddy
+    hostname: test-home4strays-frontend
+    environment:
+      - BACKEND_URL=https://test-api.example.org
+    restart: unless-stopped
+
+  # 🧪 Test Backend (für Staging)
+  test-backend:
+    image: hub.informatik.hs-augsburg.de/home4strays/home4strays-backend/image:main
+    ports:
+      - "127.0.0.1:4100:3000"
+    networks:
+      caddy:
+        aliases:
+          - test-minio
+      postgresql: {}
+    hostname: test-home4strays-backend
+    env_file: .env
+    depends_on:
+      - postgresql
+      - test-minio
+    restart: unless-stopped
+
+  # 🗄️ Datenbank
+  postgresql:
+    image: postgres:15
+    ports:
+      - "127.0.0.1:5432:5432"
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_DB=${DB_DATABASE}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    networks:
+      - postgresql
+    restart: unless-stopped
+    volumes:
+      - /opt/docker/volumes/home4strays/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_DATABASE}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # 📦 Production MinIO
+  # Achtung wir verwenden hier einen alten Release, da Minio im neusten Release das meiste im Web-Interface entfernt hat.
+  # Schau auch gerne hier: https://github.com/OpenMaxIO/openmaxio-object-browser
+  minio:
+    image: minio/minio:RELEASE.2025-04-22T22-12-26Z
+    container_name: minio
+    hostname: minio
+    ports:
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    volumes:
+      - /opt/docker/volumes/minio/data:/data
+    command: server /data --console-address ":9001"
+    networks:
+      - caddy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  # 🧪 Test MinIO (für Staging)
+  test-minio:
+    image: minio/minio:RELEASE.2025-04-22T22-12-26Z
+    container_name: test-minio
+    hostname: test-minio
+    ports:
+      - "127.0.0.1:9100:9000"
+      - "127.0.0.1:9101:9001"
+    environment:
+      MINIO_ROOT_USER: ${TEST_MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${TEST_MINIO_ROOT_PASSWORD}
+    volumes:
+      - /opt/docker/volumes/test-minio/data:/data
+    command: server /data --console-address ":9001"
+    networks:
+      - caddy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  # 📚 Dokumentation
+  docs:
+    image: hub.informatik.hs-augsburg.de/home4strays/docs/image:main
+    ports:
+      - "127.0.0.1:8080:80"
+    environment:
+      - BASE_URL=https://example.org/docs
+    networks:
+      - caddy
+    hostname: docs
+    restart: unless-stopped
+
+  # 🧪 Test Dokumentation
+  test-docs:
+    image: hub.informatik.hs-augsburg.de/home4strays/docs/image:main
+    ports:
+      - "127.0.0.1:8081:80"
+    environment:
+      - BASE_URL=https://test.example.org/docs
+    networks:
+      - caddy
+    hostname: test-docs
+    restart: unless-stopped
+
+  # 🔄 Automatische Updates
+  watchtower:
+    image: containrrr/watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /root/.docker/config.json:/config.json:ro
+    environment:
+      - WATCHTOWER_POLL_INTERVAL=300
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_INCLUDE_RESTARTING=true
+    restart: unless-stopped
+
+networks:
+  caddy:
+    name: caddy
+    external: true
+  postgresql:
+    name: postgresql
+    driver: bridge
+```
+
+:::tip[📖 Service-Dokumentationen]
+- **PostgreSQL**: [Offizielle PostgreSQL Docker Dokumentation](https://hub.docker.com/_/postgres)
+- **MinIO**: [MinIO Docker Dokumentation](https://min.io/docs/minio/container/index.html)
+- **Watchtower**: [Watchtower Dokumentation](https://containrrr.dev/watchtower/)
+:::
+
+### 🔧 Umgebungsvariablen (.env)
+
+Erstellen Sie `/opt/docker/compose/.env`:
+
+```bash
+# 🗄️ Datenbank-Konfiguration
+DB_USER=home4strays
+DB_DATABASE=home4strays
+DB_PASSWORD=your_secure_db_password_here
+
+# 📦 Production MinIO
+MINIO_ROOT_USER=admin
+MINIO_ROOT_PASSWORD=your_very_secure_minio_password_here_min_32_chars
+
+# 🧪 Test MinIO
+TEST_MINIO_ROOT_USER=testadmin
+TEST_MINIO_ROOT_PASSWORD=your_test_minio_password_here_min_32_chars
+
+# ⚙️ Backend-Konfiguration (weitere Variablen nach Bedarf)
+NODE_ENV=production
+JWT_SECRET=your_jwt_secret_here
+```
+
+:::caution[🔒 Sicherheit]
+- Verwenden Sie starke, einzigartige Passwörter
+- MinIO-Passwörter müssen mindestens 8 Zeichen lang sein
+- Stellen Sie sicher, dass die `.env`-Datei nicht öffentlich zugänglich ist
+:::
+
+## 🚀 Caddy-Konfiguration
+
+:::tip[📖 Caddy Dokumentation]
+Für detaillierte Informationen zur Caddy-Konfiguration besuchen Sie die [offizielle Caddy Dokumentation](https://caddyserver.com/docs/).
+:::
+
+### 🐳 Caddy Docker Compose
+
+Erstellen Sie `/opt/docker/compose/caddy/docker-compose.yaml`:
+
+```yaml
+version: '3.8'
+
+services:
+  # 🚀 Caddy Reverse Proxy
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    hostname: caddy
+    networks:
+      - caddy
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"  # HTTP/3 Support
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./site:/srv:ro
+      - /opt/docker/volumes/caddy/data:/data
+      - /opt/docker/volumes/caddy/config:/config
+    environment:
+      - CADDY_ADMIN=0.0.0.0:2019
+    healthcheck:
+      test: ["CMD", "caddy", "version"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  caddy:
+    name: caddy
+    external: true
+```
+
+### 📋 Beispiel-Caddyfile
+
+Erstellen Sie `/opt/docker/compose/caddy/Caddyfile`:
+
+```caddyfile
+# 🌐 Production Domain
+example.org {
+    # 🔒 TLS-Konfiguration mit Let's Encrypt
+    tls admin@example.org
+
+    # 🛡️ Security Headers
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        X-XSS-Protection "1; mode=block"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Permissions-Policy "geolocation=(), microphone=(), camera=()"
+    }
+
+    # 📚 Dokumentation
+    handle_path /docs* {
+        reverse_proxy docs:80 {
+            header_up Host {upstream_hostport}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+
+    # 🏠 Hauptanwendung
+    handle_path /* {
+        reverse_proxy home4strays-frontend:3000 {
+            header_up Host {upstream_hostport}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+
+    # 📝 Logging
+    log {
+        output file /data/logs/example.org.log {
+            roll_size 10MiB
+            roll_keep 10
+        }
+        format json
+    }
+}
+
+# 🔌 API Domain
+api.example.org {
+    tls admin@example.org
+
+    # 🛡️ Security Headers für API
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        Access-Control-Allow-Origin "*"
+        Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+        Access-Control-Allow-Headers "Content-Type, Authorization"
+    }
+
+    # 🔄 API Reverse Proxy
+    reverse_proxy home4strays-backend:3000 {
+        header_up Host {upstream_hostport}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
+
+    # 📝 Logging
+    log {
+        output file /data/logs/api.example.org.log {
+            roll_size 10MiB
+            roll_keep 10
+        }
+        format json
+    }
+}
+
+# 📦 S3 Storage Domain
+s3.example.org {
+    tls admin@example.org
+
+    # 🗄️ MinIO S3 API
+    reverse_proxy minio:9000 {
+        header_up Host {upstream_hostport}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
+
+    # 📝 Logging
+    log {
+        output file /data/logs/s3.example.org.log {
+            roll_size 10MiB
+            roll_keep 10
+        }
+        format json
+    }
+}
+
+# 🎛️ S3 Admin Console
+s3-admin.example.org {
+    tls admin@example.org
+
+    # 🛡️ Security Headers
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "SAMEORIGIN"
+    }
+
+    # 🗄️ MinIO Admin Console
+    reverse_proxy minio:9001 {
+        header_up Host {upstream_hostport}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
+
+    # 📝 Logging
+    log {
+        output file /data/logs/s3-admin.example.org.log {
+            roll_size 10MiB
+            roll_keep 10
+        }
+        format json
+    }
+}
+
+# 🧪 Test/Staging Domain
+test.example.org {
+    tls admin@example.org
+
+    # 🔌 API-Endpunkte für Tests
+    handle_path /api/openapi* {
+        rewrite * /openapi{path}
+        reverse_proxy test-home4strays-backend:3000
+    }
+
+    handle_path /openapi* {
+        rewrite * /openapi{path}
+        reverse_proxy test-home4strays-backend:3000
+    }
+
+    handle_path /api* {
+        reverse_proxy test-home4strays-backend:3000
+    }
+
+    # 🧪 Test S3
+    handle_path /s3* {
+        reverse_proxy test-minio:9000
+    }
+
+    # 🧪 Test MinIO Admin
+    handle_path /minio-admin* {
+        reverse_proxy test-minio:9001
+    }
+
+    # 🧪 Test Dokumentation
+    handle_path /docs* {
+        reverse_proxy test-docs:80
+    }
+
+    # 🧪 Test Frontend
+    handle_path /* {
+        reverse_proxy test-home4strays-frontend:3000
+    }
+
+    # 📝 Logging
+    log {
+        output file /data/logs/test.example.org.log {
+            roll_size 10MiB
+            roll_keep 10
+        }
+        format json
+    }
+}
+
+# 🎛️ Admin Interface (optional, nur für interne Nutzung)
+admin.example.org {
+    tls admin@example.org
+
+    # 🔐 Basis-Authentifizierung
+    basicauth {
+        admin $2a$14$hashed_password_here
+    }
+
+    # 🎛️ Caddy Admin API
+    reverse_proxy localhost:2019
+}
+```
+
+:::tip[📖 Caddyfile Syntax]
+Weitere Informationen zur Caddyfile-Syntax finden Sie in der [Caddyfile Dokumentation](https://caddyserver.com/docs/caddyfile).
+:::
+
+## 🚀 Deployment und Verwaltung
+
+### 🎯 Erstmalige Einrichtung
+
+1. **🌐 Netzwerk erstellen:**
+```bash
+cd /opt/docker/compose
+docker network create caddy
+```
+
+2. **🔧 Umgebungsvariablen konfigurieren:**
+```bash
+# .env-Datei erstellen und bearbeiten
+cp .env.example .env
+nano .env
+```
+
+3. **🔐 Berechtigungen setzen:**
+```bash
+sudo chown -R $USER:docker /opt/docker/
+sudo chmod -R 755 /opt/docker/compose/
+sudo chmod 600 /opt/docker/compose/.env
+```
+
+4. **▶️ Services starten:**
+```bash
+# Hauptanwendung starten
+docker compose up -d
+
+# Caddy starten
+cd caddy/
+docker compose up -d
+```
+
+### 🔧 Regelmäßige Wartung
+
+#### 📦 System-Updates
+
+```bash
+# System-Pakete aktualisieren
+sudo apt update && sudo apt upgrade -y
+
+# Docker-Images aktualisieren (wird automatisch durch Watchtower gemacht)
+docker compose pull
+docker compose up -d
+```
+
+#### 💾 Backup-Strategien
+
+<Tabs>
+<TabItem label="🗄️ Datenbank-Backup">
+
+```bash
+#!/bin/bash
+# backup-db.sh
+
+BACKUP_DIR="/opt/backups/postgres"
+DATE=$(date +%Y%m%d_%H%M%S)
+DB_CONTAINER="compose_postgresql_1"
+
+mkdir -p $BACKUP_DIR
+
+# 💾 Datenbank-Backup erstellen
+docker exec $DB_CONTAINER pg_dump -U home4strays home4strays > $BACKUP_DIR/home4strays_$DATE.sql
+
+# 🗑️ Alte Backups löschen (älter als 30 Tage)
+find $BACKUP_DIR -name "*.sql" -mtime +30 -delete
+
+echo "✅ Backup erstellt: $BACKUP_DIR/home4strays_$DATE.sql"
+```
+
+:::tip[📖 PostgreSQL Backup-Dokumentation]
+Weitere Informationen zu PostgreSQL-Backups finden Sie in der [PostgreSQL Backup-Dokumentation](https://www.postgresql.org/docs/current/backup.html).
+:::
+
+</TabItem>
+<TabItem label="📦 MinIO-Backup">
+
+```bash
+#!/bin/bash
+# backup-minio.sh
+
+BACKUP_DIR="/opt/backups/minio"
+DATE=$(date +%Y%m%d_%H%M%S)
+MINIO_DATA="/opt/docker/volumes/minio/data"
+
+mkdir -p $BACKUP_DIR
+
+# 🔄 MinIO-Daten synchronisieren
+rsync -av --delete $MINIO_DATA/ $BACKUP_DIR/minio_$DATE/
+
+# 🗑️ Alte Backups löschen (älter als 7 Tage)
+find $BACKUP_DIR -maxdepth 1 -type d -name "minio_*" -mtime +7 -exec rm -rf {} \;
+
+echo "✅ MinIO Backup erstellt: $BACKUP_DIR/minio_$DATE/"
+```
+
+:::tip[📖 MinIO Backup-Dokumentation]
+Weitere Informationen zu MinIO-Backups finden Sie in der [MinIO Backup-Dokumentation](https://min.io/docs/minio/linux/operations/backup-restore.html).
+:::
+
+</TabItem>
+</Tabs>
+
+#### ⏰ Cronjob für automatische Backups
+
+```bash
+# Cronjob hinzufügen
+crontab -e
+
+# 🌙 Täglich um 2:00 Uhr Datenbank-Backup
+0 2 * * * /opt/docker/scripts/backup-db.sh
+
+# 🌙 Täglich um 3:00 Uhr MinIO-Backup
+0 3 * * * /opt/docker/scripts/backup-minio.sh
+```
+
+### 📊 Monitoring und Logs
+
+#### 📝 Log-Verwaltung
+
+```bash
+# 📋 Alle Service-Logs anzeigen
+docker compose logs
+
+# 🎯 Spezifische Service-Logs
+docker compose logs frontend
+docker compose logs backend
+docker compose logs postgresql
+
+# 🔄 Live-Logs verfolgen
+docker compose logs -f
+
+# 🚀 Caddy-Logs
+docker compose -f caddy/docker-compose.yaml logs caddy
+
+# 🐳 Systemweite Container-Logs
+docker logs <container-name>
+```
+
+#### 📈 Systemüberwachung
+
+```bash
+# 📊 Container-Status
+docker compose ps
+
+# 💻 Ressourcenverbrauch
+docker stats
+
+# 💽 Festplattenspeicher
+df -h /opt/docker/volumes/
+
+# 🌐 Netzwerk-Status
+docker network ls
+docker network inspect caddy
+```
+
+### 🔧 Troubleshooting
+
+#### ⚠️ Häufige Probleme
+
+**❌ Problem: Services starten nicht**
+```bash
+# ✅ Konfiguration validieren
+docker compose config
+
+# 🔍 Detaillierte Fehlermeldungen
+docker compose up --no-deps service-name
+
+# 📊 Container-Status prüfen
+docker compose ps -a
+```
+
+**❌ Problem: Datenbankverbindung fehlgeschlagen**
+```bash
+# 📝 PostgreSQL-Container-Logs prüfen
+docker compose logs postgresql
+
+# 🔌 Datenbankverbindung testen
+docker compose exec postgresql psql -U home4strays -d home4strays -c "SELECT version();"
+```
+
+**❌ Problem: MinIO nicht erreichbar**
+```bash
+# 📝 MinIO-Status prüfen
+docker compose logs minio
+
+# ❤️ Health-Check
+docker compose exec minio curl http://localhost:9000/minio/health/live
+```
+
+**❌ Problem: Caddy-Zertifikate**
+```bash
+# 📝 Caddy-Logs prüfen
+docker compose -f caddy/docker-compose.yaml logs caddy
+
+# 🔒 Zertifikat-Status
+docker compose -f caddy/docker-compose.yaml exec caddy caddy list-certificates
+```
+
+#### 🚨 Notfall-Wiederherstellung
+
+1. **⏹️ Service stoppen:**
+```bash
+docker compose down
+```
+
+2. **🗄️ Datenbank wiederherstellen:**
+```bash
+# Container temporär starten
+docker compose up -d postgresql
+
+# Backup einspielen
+cat /opt/backups/postgres/home4strays_YYYYMMDD_HHMMSS.sql | docker compose exec -T postgresql psql -U home4strays -d home4strays
+```
+
+3. **📦 MinIO-Daten wiederherstellen:**
+```bash
+# Daten zurückkopieren
+rsync -av /opt/backups/minio/minio_YYYYMMDD_HHMMSS/ /opt/docker/volumes/minio/data/
+```
+
+4. **▶️ Services neu starten:**
+```bash
+docker compose up -d
+```
+
+## 🔒 Sicherheitsüberlegungen
+
+### 🛡️ Firewall-Konfiguration
+
+```bash
+# 🔐 UFW (Ubuntu Firewall) konfigurieren
+sudo ufw enable
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+
+# 🚪 Nur notwendige Ports öffnen
+sudo ufw allow 22/tcp    # SSH
+sudo ufw allow 80/tcp    # HTTP
+sudo ufw allow 443/tcp   # HTTPS
+
+# 🏠 Lokale Dienste nur von localhost erreichbar machen
+# (Docker bindet bereits an 127.0.0.1)
+```
+
+### 🔒 SSL/TLS-Konfiguration
+
+Das Caddyfile verwendet automatisch Let's Encrypt für SSL-Zertifikate. Für zusätzliche Sicherheit:
+
+- Verwenden Sie starke TLS-Cipher-Suites
+- Aktivieren Sie HSTS (bereits im Beispiel enthalten)
+- Überprüfen Sie regelmäßig die SSL-Konfiguration mit Tools wie SSL Labs
+
+:::tip[📖 Let's Encrypt Dokumentation]
+Weitere Informationen zu Let's Encrypt und SSL-Zertifikaten finden Sie in der [Let's Encrypt Dokumentation](https://letsencrypt.org/docs/).
+:::
+
+### 🔄 Regelmäßige Sicherheitsupdates
+
+```bash
+# 🔐 Automatische Sicherheitsupdates aktivieren
+sudo apt install unattended-upgrades
+sudo dpkg-reconfigure unattended-upgrades
+
+# 🔄 Docker-Images durch Watchtower automatisch aktualisieren (bereits konfiguriert)
+```
+
+:::tip[📖 Watchtower Dokumentation]
+Weitere Informationen zur Watchtower-Konfiguration finden Sie in der [Watchtower Dokumentation](https://containrrr.dev/watchtower/).
+:::
+
+## ⚡ Performance-Optimierung
+
+### 📊 Container-Ressourcen begrenzen
+
+Erweitern Sie die Docker Compose-Konfiguration um Ressourcenlimits:
+
+```yaml
+services:
+  backend:
+    # ... andere Konfiguration
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+        reservations:
+          memory: 512M
+          cpus: '0.25'
+```
+
+:::tip[📖 Docker Resource Management]
+Mehr über Docker-Ressourcenverwaltung erfahren Sie in der [Docker Resource Constraints Dokumentation](https://docs.docker.com/config/containers/resource_constraints/).
+:::
+
+### 🗄️ Datenbank-Optimierung
+
+Erstellen Sie eine PostgreSQL-Konfigurationsdatei für bessere Performance:
+
+```bash
+# /opt/docker/compose/postgresql.conf
+shared_buffers = 256MB
+effective_cache_size = 1GB
+maintenance_work_mem = 64MB
+checkpoint_completion_target = 0.9
+wal_buffers = 16MB
+default_statistics_target = 100
+random_page_cost = 1.1
+effective_io_concurrency = 200
+```
+
+Fügen Sie dann das Volume zur PostgreSQL-Konfiguration hinzu:
+
+```yaml
+postgresql:
+  # ... andere Konfiguration
+  volumes:
+    - /opt/docker/volumes/home4strays/postgres:/var/lib/postgresql/data
+    - ./postgresql.conf:/etc/postgresql/postgresql.conf:ro
+  command: postgres -c config_file=/etc/postgresql/postgresql.conf
+```
+
+:::tip[📖 PostgreSQL Performance Tuning]
+Weitere Informationen zur PostgreSQL-Performance-Optimierung finden Sie in der [PostgreSQL Performance Tuning Dokumentation](https://www.postgresql.org/docs/current/runtime-config.html).
+:::
+
+## 📱 Erweiterte Konfigurationen
+
+### 📊 Monitoring mit Portainer (Optional)
+
+Für eine grafische Benutzeroberfläche zur Container-Verwaltung können Sie Portainer hinzufügen:
+
+```yaml
+# Zu docker-compose.yaml hinzufügen
+  # 📊 Portainer für Container-Management
+  portainer:
+    image: portainer/portainer-ce:latest
+    ports:
+      - "127.0.0.1:9443:9443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    restart: unless-stopped
+    command: -H unix:///var/run/docker.sock
+
+volumes:
+  portainer_data:
+```
+
+:::tip[📖 Portainer Dokumentation]
+Weitere Informationen zu Portainer finden Sie in der [Portainer Dokumentation](https://docs.portainer.io/).
+:::
+
+### 📝 Logging mit ELK Stack (Optional)
+
+Für erweiterte Log-Analyse können Sie einen ELK Stack (Elasticsearch, Logstash, Kibana) hinzufügen:
+
+```yaml
+# Erweiterte Logging-Konfiguration
+  # 🔍 Elasticsearch
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    ports:
+      - "127.0.0.1:9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - elk
+
+  # 📊 Kibana
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    ports:
+      - "127.0.0.1:5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+    networks:
+      - elk
+
+volumes:
+  elasticsearch_data:
+
+networks:
+  elk:
+    driver: bridge
+```
+
+:::tip[📖 Elastic Stack Dokumentation]
+Weitere Informationen zum Elastic Stack finden Sie in der [Elastic Stack Dokumentation](https://www.elastic.co/guide/index.html).
+:::
+
+## 🔄 CI/CD Integration
+
+### 🚀 GitLab CI Integration
+
+Beispiel `.gitlab-ci.yml` für automatische Deployments:
+
+```yaml
+stages:
+  - deploy
+
+deploy_production:
+  stage: deploy
+  script:
+    - ssh user@server 'cd /opt/docker/compose && docker compose pull && docker compose up -d'
+  only:
+    - main
+  when: manual
+
+deploy_staging:
+  stage: deploy
+  script:
+    - ssh user@server 'cd /opt/docker/compose && docker compose pull test-frontend test-backend test-docs && docker compose up -d'
+  only:
+    - develop
+  when: manual
+```
+
+### 🔧 Wartungsskripte
+
+Erstellen Sie nützliche Wartungsskripte:
+
+```bash
+#!/bin/bash
+# /opt/docker/scripts/maintenance.sh
+
+echo "🔧 Starte Wartungsroutine..."
+
+# 🗑️ Unbenutzte Docker-Ressourcen aufräumen
+echo "🧹 Räume Docker-System auf..."
+docker system prune -af
+
+# 📊 Speicherplatz prüfen
+echo "💽 Aktueller Speicherplatz:"
+df -h /opt/docker/volumes/
+
+# 📝 Log-Größen prüfen
+echo "📝 Log-Größen:"
+du -sh /opt/docker/volumes/caddy/data/logs/
+
+# ❤️ Health-Checks durchführen
+echo "❤️ Führe Health-Checks durch..."
+docker compose ps
+docker compose exec postgresql pg_isready -U home4strays -d home4strays
+docker compose exec minio curl -f http://localhost:9000/minio/health/live
+
+echo "✅ Wartung abgeschlossen!"
+```
+
+## 📚 Weitere Ressourcen
+
+### 📖 Offizielle Dokumentationen
+
+- **🐳 Docker**: [https://docs.docker.com/](https://docs.docker.com/)
+- **🚀 Caddy**: [https://caddyserver.com/docs/](https://caddyserver.com/docs/)
+- **🗄️ PostgreSQL**: [https://www.postgresql.org/docs/](https://www.postgresql.org/docs/)
+- **📦 MinIO**: [https://min.io/docs/](https://min.io/docs/)
+- **🔄 Watchtower**: [https://containrrr.dev/watchtower/](https://containrrr.dev/watchtower/)
+
+### 🆔 Best Practices
+
+- **🔒 Sicherheit**: Verwenden Sie immer starke Passwörter und halten Sie Ihre Container aktuell
+- **💾 Backups**: Erstellen Sie regelmäßige Backups und testen Sie die Wiederherstellung
+- **📊 Monitoring**: Überwachen Sie Ihre Container und Ressourcenverbrauch
+- **📝 Dokumentation**: Halten Sie Ihre Konfiguration und Änderungen dokumentiert
+- **🧪 Testing**: Testen Sie Änderungen zunächst in der Staging-Umgebung
+
+### 🚨 Support und Hilfe
+
+Bei Problemen oder Fragen:
+
+1. **📝 Logs prüfen**: Schauen Sie zuerst in die Container-Logs
+2. **📖 Dokumentation**: Konsultieren Sie die offiziellen Dokumentationen
+3. **🔍 Community**: Nutzen Sie Community-Foren wie Stack Overflow oder Reddit
+4. **🐛 Issues**: Melden Sie Bugs in den entsprechenden GitHub-Repositories
+
+---
+
+## 📋 Checkliste für Produktivumgebung
+
+### ✅ Pre-Deployment Checklist
+
+- [ ] 🔐 Starke Passwörter in `.env` gesetzt
+- [ ] 🛡️ Firewall konfiguriert
+- [ ] 🔒 SSL-Zertifikate funktionieren
+- [ ] 💾 Backup-Strategie implementiert
+- [ ] 📊 Monitoring eingerichtet
+- [ ] 🧪 Testing in Staging-Umgebung erfolgreich
+- [ ] 📝 Dokumentation aktualisiert
+- [ ] 🚨 Notfall-Wiederherstellungsplan getestet
+
+### ✅ Post-Deployment Checklist
+
+- [ ] 🌐 Alle Services erreichbar
+- [ ] ❤️ Health-Checks erfolgreich
+- [ ] 📝 Logs werden korrekt geschrieben
+- [ ] 🔄 Watchtower funktioniert
+- [ ] 💾 Backups werden erstellt
+- [ ] 📊 Performance-Metriken normal
+- [ ] 🔒 Sicherheits-Scans durchgeführt
+
+---
+

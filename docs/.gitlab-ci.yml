@@ -1,0 +1,61 @@
+# pages:
+#   # The Docker image that will be used to build your app
+#   image: node:lts
+
+#   before_script:
+#     - git submodule sync --recursive
+#     - git submodule update --init --recursive
+#     - npm ci
+#     - cd home4strays-frontend && npm ci && cd ..
+#     - cd home4strays-backend && npm ci && cd ..
+
+#   script:
+#     # Specify the steps involved to build your app here
+#     - npm run build
+
+#   artifacts:
+#     paths:
+#       # The folder that contains the built files to be published.
+#       # This must be called "public".
+#       - public
+
+#   only:
+#     # Trigger a new build and deploy only when there is a push to the
+#     # branch(es) below
+#     - main
+
+stages:
+  - prepare
+  - build
+
+prepare:
+  image: bitnami/git
+  stage: prepare
+  script:
+    # Inject CI_JOB_TOKEN into submodule URLs
+    - sed -i "s|https://gitlab.informatik.hs-augsburg.de/|https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.informatik.hs-augsburg.de/|g" .gitmodules
+
+    # Sync and update submodules
+    - git submodule sync --recursive
+    - git submodule deinit -f .
+    - rm -rf .git/modules/*
+    - git submodule update --init --force --remote --recursive
+  artifacts:
+    paths:
+      - .
+    expire_in: 1 hour
+
+# BUILD JOB: Only builds the image, no Git commands here
+build:
+  stage: build
+  image:
+    name: gcr.io/kaniko-project/executor:v1.23.2-debug
+    entrypoint: [""]
+  script:
+    - mkdir -p /kaniko/.docker
+    - /kaniko/executor
+      --context "${CI_PROJECT_DIR}"
+      --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
+      --destination "${CI_REGISTRY}/home4strays/docs/image:${CI_COMMIT_REF_NAME}"
+  dependencies:
+    - prepare

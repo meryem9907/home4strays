@@ -1,0 +1,6 @@
+[submodule "home4strays-backend"]
+	path = home4strays-backend
+	url = https://gitlab.informatik.hs-augsburg.de/home4strays/home4strays-backend.git
+[submodule "home4strays-frontend"]
+	path = home4strays-frontend
+	url = https://gitlab.informatik.hs-augsburg.de/home4strays/home4strays-frontend.git

@@ -1,0 +1,49 @@
+image: node:23
+
+variables:
+  POSTGRES_DB: home4strays
+  POSTGRES_USER: home4strays
+  POSTGRES_PASSWORD: home4strays
+  POSTGRES_HOST_AUTH_METHOD: trust
+
+stages:
+  - lint_and_test
+  - build_container
+
+lint-and-test:
+  services:
+    - postgres
+  stage: lint_and_test
+  variables:
+    DB_DATABASE: $POSTGRES_DB
+    DB_USER: $POSTGRES_USER
+    DB_PASSWORD: $POSTGRES_PASSWORD
+    DB_HOST: postgres
+    TOKEN_SECRET: $TOKEN_SECRET
+    MINIO_DOMAIN: home4strays
+    MINIO_ACCESS_KEY: $MINIO_ACCESS_KEY
+    MINIO_SECRET_KEY: $MINIO_SECRET_KEY
+    MINIO_BUCKET_NAME: $MINIO_BUCKET_NAME
+    MINIO_ENDPOINT: $MINIO_ENDPOINT
+    MINIO_PORT: $MINIO_PORT
+    ADMIN_PASSWORD: $ADMIN_PASSWORD
+  script:
+    - npm i
+    - npm run build
+    - npm run prettier:check
+    - npm run test:coverage
+  tags:
+    - docker
+
+build:
+  stage: build_container
+  image:
+    name: gcr.io/kaniko-project/executor:v1.23.2-debug
+    entrypoint: [""]
+  script:
+    - mkdir -p /kaniko/.docker
+    - echo "{\"auths\":{\"registry.git.obco.pro\":{\"username\":\"$REGISTRY_ACCESS_USER\",\"password\":\"$REGISTRY_ACCESS_KEY\"}}}" > /kaniko/.docker/config.json
+    - /kaniko/executor
+      --context "${CI_PROJECT_DIR}"
+      --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
+      --destination "${CI_REGISTRY}/home4strays/home4strays-backend/image:${CI_COMMIT_REF_NAME}"

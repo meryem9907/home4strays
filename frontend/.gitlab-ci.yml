@@ -1,0 +1,28 @@
+image: node:latest
+
+stages:
+  - lint_and_test
+  - build_container
+
+lint-and-test:
+  stage: lint_and_test
+  script:
+    - npm install
+    - npm run build
+    - npm run lint:check
+    - npm run test
+
+build:
+  stage: build_container
+  image:
+    name: gcr.io/kaniko-project/executor:v1.23.2-debug
+    entrypoint: [""]
+  script:
+    - mkdir -p /kaniko/.docker
+    - echo "{\"auths\":{\"registry.git.obco.pro\":{\"username\":\"$REGISTRY_ACCESS_USER\",\"password\":\"$REGISTRY_ACCESS_KEY\"}}}" > /kaniko/.docker/config.json
+    - /kaniko/executor
+      --context "${CI_PROJECT_DIR}"
+      --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
+      --destination "${CI_REGISTRY}/home4strays/home4strays-frontend/image:${CI_COMMIT_REF_NAME}"
+
+#      --destination "registry.git.obco.pro/yonggan/home4strays-frontend:${CI_COMMIT_REF_NAME}"

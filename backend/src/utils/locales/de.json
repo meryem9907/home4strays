@@ -1,0 +1,66 @@
+{
+  "experience": {
+    "moreThan10Years": "Mehr als 10 Jahre",
+    "moreThan5Years": "Mehr als 5 Jahre",
+    "moreThan2Years": "Mehr als 2 Jahre",
+    "moreThan1Year": "Mehr als 1 Jahr",
+    "noExperience": "Keine Erfahrung"
+  },
+  "tenure": {
+    "rented": "Gemietet",
+    "paid": "Bezahlt",
+    "other": "Andere"
+  },
+  "maritalStatus": {
+    "married": "Verheiratet",
+    "single": "Ledig",
+    "widowed": "Verwitwet",
+    "other": "Andere"
+  },
+  "localityType": {
+    "urban": "Städtisch",
+    "rural": "Ländlich",
+    "other": "Andere"
+  },
+  "residence": {
+    "house": "Haus",
+    "flat": "Wohnung",
+    "other": "Andere"
+  },
+  "employment": {
+    "employed": "Angestellt",
+    "freelancer": "Freiberufler",
+    "selfEmployed": "Selbstständig",
+    "student": "Student",
+    "unemployed": "Arbeitslos",
+    "other": "Andere"
+  },
+  "weekday": {
+    "monday": "Montag",
+    "tuesday": "Dienstag",
+    "wednesday": "Mittwoch",
+    "thursday": "Donnerstag",
+    "friday": "Freitag",
+    "saturday": "Samstag",
+    "sunday": "Sonntag"
+  },
+  "gender": {
+    "male": "Männlich",
+    "female": "Weiblich",
+    "diverse": "Divers"
+  },
+  "behaviour": {
+    "shy": "Schüchtern",
+    "lively": "Lebhaft",
+    "vigilant": "Wachsam",
+    "cautious": "Vorsichtig",
+    "sensitive": "Sensibel",
+    "gentle": "Sanft",
+    "defensive": "Verteidigend",
+    "lazy": "Faul",
+    "playful": "Verspielt",
+    "aggressive": "Aggressiv",
+    "obedient": "Gehorsam",
+    "mischievous": "Ungezogen"
+  }
+}

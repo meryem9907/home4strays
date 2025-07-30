@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="el">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      body {
+        font-family: Verdana, sans-serif;
+        color: #333333;
+        margin: 0;
+        padding: 0;
+        background-color: #f9f9f9;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: #ffffff;
+        padding: 20px;
+        border: 1px solid #dddddd;
+      }
+      .button {
+        display: inline-block;
+        background-color: #d99a6c;
+        color: #ffffff;
+        padding: 10px 20px;
+        text-decoration: none;
+        border-radius: 5px;
+        font-weight: bold;
+      }
+      .footer {
+        font-size: 12px;
+        color: #777777;
+        margin-top: 30px;
+        line-height: 1.4;
+      }
+      .footer a {
+        color: #1e90ff;
+        text-decoration: none;
+      }
+      hr {
+        border: none;
+        border-top: 1px solid #eeeeee;
+        margin: 20px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <p>Γεια σου {{name}},</p>
+      <p>
+        Έχετε προσκληθεί από ένα μέλος της ΜΚΟ σας να συμμετάσχετε στην
+        πλατφόρμα
+        <strong>Home4Strays</strong>. Μπορείτε να ενεργοποιήσετε τον λογαριασμό
+        σας και να ξεκινήσετε άμεσα μέσω του παρακάτω συνδέσμου:
+      </p>
+      <p style="text-align: center">
+        <a href="{{inviteLink}}" class="button">Εγγραφή τώρα</a>
+      </p>
+      <p>
+        Αν λάβατε αυτό το email κατά λάθος, μπορείτε απλά να το αγνοήσετε – ο
+        λογαριασμός σας δεν θα δημιουργηθεί αν δεν πατήσετε τον σύνδεσμο.
+      </p>
+      <p>
+        Αυτό το μήνυμα δημιουργήθηκε αυτόματα. Παρακαλούμε μην απαντήσετε σε
+        αυτό το email.
+      </p>
+      <p>Με φιλικούς χαιρετισμούς,<br />Η ομάδα του Home4Strays</p>
+      <hr />
+      <div class="footer">
+        <p>
+          Home4Strays<br />
+          An der Hochschule 1 · 86161 Augsburg<br />
+          Email: home4strays@obco.pro
+        </p>
+        <p>
+          <a href="https://home4strays.de/impressum">Αποτύπωμα</a> |
+          <a href="https://home4strays.de/datenschutz">Πολιτική απορρήτου</a>
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

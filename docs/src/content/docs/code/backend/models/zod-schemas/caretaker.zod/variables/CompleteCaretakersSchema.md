@@ -1,0 +1,18 @@
+---
+editUrl: false
+next: false
+prev: false
+title: "CompleteCaretakersSchema"
+---
+
+> `const` **CompleteCaretakersSchema**: `ZodArray`\<`ZodObject`\<\{ `adoptionWillingness`: `ZodBoolean`; `birthdate`: `ZodDate`; `cityName`: `ZodString`; `country`: `ZodString`; `ctHours`: `ZodArray`\<`ZodObject`\<\{ `endTime`: `ZodString`; `startTime`: `ZodString`; `weekday`: `ZodString`; \}, `"strip"`, `ZodTypeAny`, \{ `endTime`: `string`; `startTime`: `string`; `weekday`: `string`; \}, \{ `endTime`: `string`; `startTime`: `string`; `weekday`: `string`; \}\>, `"many"`\>; `email`: `ZodOptional`\<`ZodString`\>; `employmentType`: `ZodString`; `experience`: `ZodString`; `financialAssistance`: `ZodBoolean`; `firstName`: `ZodOptional`\<`ZodString`\>; `floor`: `ZodNumber`; `garden`: `ZodBoolean`; `holidayCare`: `ZodBoolean`; `houseNumber`: `ZodString`; `isAdmin`: `ZodOptional`\<`ZodDefault`\<`ZodBoolean`\>\>; `isNgoUser`: `ZodOptional`\<`ZodDefault`\<`ZodBoolean`\>\>; `lastName`: `ZodOptional`\<`ZodString`\>; `localityType`: `ZodString`; `maritalStatus`: `ZodString`; `numberKids`: `ZodNumber`; `password`: `ZodOptional`\<`ZodString`\>; `phoneNumber`: `ZodNullable`\<`ZodOptional`\<`ZodString`\>\>; `previousAdoption`: `ZodBoolean`; `profilePictureLink`: `ZodNullable`\<`ZodOptional`\<`ZodString`\>\>; `profilePicturePath`: `ZodNullable`\<`ZodOptional`\<`ZodString`\>\>; `residence`: `ZodString`; `space`: `ZodNumber`; `streetName`: `ZodString`; `tenure`: `ZodString`; `zip`: `ZodString`; \}, `"strip"`, `ZodTypeAny`, \{ `adoptionWillingness`: `boolean`; `birthdate`: `Date`; `cityName`: `string`; `country`: `string`; `ctHours`: `object`[]; `email?`: `string`; `employmentType`: `string`; `experience`: `string`; `financialAssistance`: `boolean`; `firstName?`: `string`; `floor`: `number`; `garden`: `boolean`; `holidayCare`: `boolean`; `houseNumber`: `string`; `isAdmin?`: `boolean`; `isNgoUser?`: `boolean`; `lastName?`: `string`; `localityType`: `string`; `maritalStatus`: `string`; `numberKids`: `number`; `password?`: `string`; `phoneNumber?`: `null` \| `string`; `previousAdoption`: `boolean`; `profilePictureLink?`: `null` \| `string`; `profilePicturePath?`: `null` \| `string`; `residence`: `string`; `space`: `number`; `streetName`: `string`; `tenure`: `string`; `zip`: `string`; \}, \{ `adoptionWillingness`: `boolean`; `birthdate`: `Date`; `cityName`: `string`; `country`: `string`; `ctHours`: `object`[]; `email?`: `string`; `employmentType`: `string`; `experience`: `string`; `financialAssistance`: `boolean`; `firstName?`: `string`; `floor`: `number`; `garden`: `boolean`; `holidayCare`: `boolean`; `houseNumber`: `string`; `isAdmin?`: `boolean`; `isNgoUser?`: `boolean`; `lastName?`: `string`; `localityType`: `string`; `maritalStatus`: `string`; `numberKids`: `number`; `password?`: `string`; `phoneNumber?`: `null` \| `string`; `previousAdoption`: `boolean`; `profilePictureLink?`: `null` \| `string`; `profilePicturePath?`: `null` \| `string`; `residence`: `string`; `space`: `number`; `streetName`: `string`; `tenure`: `string`; `zip`: `string`; \}\>, `"many"`\>
+
+Defined in: home4strays-backend/src/models/zod-schemas/caretaker.zod.ts:165
+
+Represents a schema for an array of complete caretaker data.
+This schema is used to validate and structure complete caretaker information,
+including all available fields defined in the CompleteCaretakerSchema.
+
+## See
+
+CompleteCaretakerSchema

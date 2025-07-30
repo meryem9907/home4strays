@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      body {
+        font-family: Verdana, sans-serif;
+        color: #333333;
+        margin: 0;
+        padding: 0;
+        background-color: #f9f9f9;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: #ffffff;
+        padding: 20px;
+        border: 1px solid #dddddd;
+      }
+      .button {
+        display: inline-block;
+        background-color: #d99a6c;
+        color: #ffffff;
+        padding: 10px 20px;
+        text-decoration: none;
+        border-radius: 5px;
+        font-weight: bold;
+      }
+      .footer {
+        font-size: 12px;
+        color: #777777;
+        margin-top: 30px;
+        line-height: 1.4;
+      }
+      .footer a {
+        color: #1e90ff;
+        text-decoration: none;
+      }
+      hr {
+        border: none;
+        border-top: 1px solid #eeeeee;
+        margin: 20px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <p>Hola {{name}},</p>
+      <p>
+        Has sido invitado por un miembro de tu ONG a unirte a la plataforma
+        <strong>Home4Strays</strong>. Puedes activar tu cuenta y comenzar de
+        inmediato a través del siguiente enlace:
+      </p>
+      <p style="text-align: center">
+        <a href="{{inviteLink}}" class="button">Registrarse ahora</a>
+      </p>
+      <p>
+        Si has recibido este correo por error, simplemente ignóralo. Tu cuenta
+        no se creará a menos que hagas clic en el enlace.
+      </p>
+      <p>
+        Este mensaje fue generado automáticamente. Por favor, no respondas a
+        este correo electrónico.
+      </p>
+      <p>Saludos cordiales,<br />El equipo de Home4Strays</p>
+      <hr />
+      <div class="footer">
+        <p>
+          Home4Strays<br />
+          An der Hochschule 1 · 86161 Augsburg<br />
+          Correo electrónico: home4strays@obco.pro
+        </p>
+        <p>
+          <a href="https://home4strays.de/impressum">Aviso legal</a> |
+          <a href="https://home4strays.de/datenschutz"
+            >Política de privacidad</a
+          >
+        </p>
+      </div>
+    </div>
+  </body>
+</html>
