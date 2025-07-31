@@ -10,6 +10,6 @@ On our site NGOs can sign up to publish stray animals while shelters can sign up
 ✨ verification of ngos by developers via document
 
 # Test version
-We are still in development mode and our test version is available on: [home4strays.org](home4strays.org). 
+We are still in development mode and our test version is available on: [[home4strays.org](https://home4strays.org/en)]. 
 
 
