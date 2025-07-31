@@ -4,10 +4,11 @@ As a team of 8 students, we committed ourselves to developing an app that facili
 On our site NGOs can sign up to publish stray animals while shelters can sign up to search and find animals of their choice. 
 
 ## Current features:
-✨ search, filter 
-✨ bookmarking
-✨ maintainance of ngo and shelter profiles
-✨ verification of ngos by developers via document
+- ✨ search, filter 
+- ✨ bookmarking
+- ✨ maintainance of ngo and shelter profiles
+- ✨ verification of ngos by developers via document
+- ✨ multilingual: english, german, turkish
 
 # Test version
 We are still in development mode and our test version is available on: [[home4strays.org](https://home4strays.org/en)]. 
