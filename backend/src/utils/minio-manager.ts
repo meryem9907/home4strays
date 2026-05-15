@@ -136,15 +136,31 @@ export default class MinioManager {
       : filename;
   }
 
+  private encodeObjectKeyForUrl(objectKey: string): string {
+    return objectKey
+      .split("/")
+      .map((segment) => encodeURIComponent(segment))
+      .join("/");
+  }
+
   public async getPublicURL(filename: string, expirationSeconds = undefined) {
     const bucket = this.bucketName;
     const objectKey = this.normalizeObjectKey(filename);
     const publicBase = getSecret("MINIO_PUBLIC_URL").replace(/\/$/, "");
+    const encodedKey = this.encodeObjectKeyForUrl(objectKey);
 
     // Docker/local: presigned URLs are signed for host "minio" but the browser uses
     // localhost — using direct public URLs instead (requires anonymous read on prefixes).
     if (getSecret("MINIO_DIRECT_URLS", "false").toLowerCase() === "true") {
-      return `${publicBase}/${bucket}/${objectKey}`;
+      let url = `${publicBase}/${bucket}/${encodedKey}`;
+      try {
+        const stat = await this.client.statObject(bucket, objectKey);
+        const version = stat.lastModified?.getTime() ?? stat.etag ?? Date.now();
+        url += `?v=${version}`;
+      } catch {
+        // Object may not exist yet; return URL without cache buster.
+      }
+      return url;
     }
 
     const presignedUrl = await this.client.presignedGetObject(
@@ -177,6 +193,26 @@ export default class MinioManager {
    * @param filenames - An array of filenames to delete.
    */
   public async removeFiles(filenames: Array<string>) {
-    await this.client.removeObjects(this.bucketName, filenames);
+    const keys = filenames.map((name) => this.normalizeObjectKey(name));
+    await this.client.removeObjects(this.bucketName, keys);
+  }
+
+  /** Rebuild profilePictureLink from MinIO path (picks up replaced mockdata files). */
+  public async refreshProfileLink(item: {
+    profilePicturePath?: string | null;
+    profilePictureLink?: string | null;
+  }): Promise<void> {
+    if (item.profilePicturePath) {
+      item.profilePictureLink = await this.getPublicURL(item.profilePicturePath);
+    }
+  }
+
+  public async refreshProfileLinks<
+    T extends {
+      profilePicturePath?: string | null;
+      profilePictureLink?: string | null;
+    },
+  >(items: T[]): Promise<void> {
+    await Promise.all(items.map((item) => this.refreshProfileLink(item)));
   }
 }

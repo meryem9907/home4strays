@@ -2,7 +2,7 @@ import { Router } from "express";
 import { openAPIRoute } from "express-zod-openapi-autogen";
 
 // db
-import { databaseManager } from "../app";
+import { databaseManager, minioManager } from "../app";
 import { NGOQueries } from "../database/queries/ngo";
 import { PetQueries } from "../database/queries/pet";
 import { FullNGO } from "../models/db-models/ngo";
@@ -49,6 +49,8 @@ router.get(
         if (!animals) {
           throw PetNotFoundError;
         }
+
+        await minioManager.refreshProfileLinks(animals);
 
         const response = PetResponseSchema.parse(animals);
         res.status(200).json(response);

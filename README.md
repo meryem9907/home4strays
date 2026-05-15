@@ -7,7 +7,9 @@ On our site NGOs can sign up to publish stray animals while shelters can sign up
 - ✨ search, filter 
 ![search.png](search.png)
 - ✨ bookmarking
+![bookmark.png](bookmark.png)
 - ✨ maintainance of ngo and shelter profiles
+![profile.png](profile.png)
 - ✨ verification of ngos by developers via document
 - ✨ multilingual: english, german, turkish
 ![de.png](de.png)

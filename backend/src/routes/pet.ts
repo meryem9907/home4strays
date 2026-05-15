@@ -3,7 +3,7 @@ import express, { Router, Request, Response, NextFunction } from "express";
 import { plainToInstance } from "class-transformer";
 import { openAPIRoute } from "express-zod-openapi-autogen";
 import { z } from "zod";
-import { databaseManager } from "../app";
+import { databaseManager, minioManager } from "../app";
 import { Pet } from "../models/db-models/pet";
 import { PetFilters, PetQueries } from "../database/queries/pet";
 import {
@@ -260,6 +260,8 @@ router.get(
           tm,
         );
 
+        await minioManager.refreshProfileLinks(result.pets);
+
         res.status(200).json({
           data: result.pets,
           meta: {
@@ -433,6 +435,9 @@ router.get(
           console.log(`[DEBUG] Throwing IdNotFoundError for pet ID: ${petId}`);
           throw IdNotFoundError;
         }
+
+        await minioManager.refreshProfileLink(pet);
+
         res.status(200).json({ data: pet });
       } catch (err) {
         console.log(`[DEBUG] Error in GET /pet/:id: ${err}`);
