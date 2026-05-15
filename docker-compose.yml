@@ -43,8 +43,6 @@ services:
     volumes:
       - minio_data:/data
 
-  # One-shot: upload backend/mockdata/* → MinIO bucket home4strays/mockdata/
-  # (inline script avoids Windows CRLF breaking a mounted .sh file)
   minio-init:
     image: minio/mc:latest
     depends_on:
