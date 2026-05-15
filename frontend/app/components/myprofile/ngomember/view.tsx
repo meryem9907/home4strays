@@ -125,7 +125,10 @@ export default function NgoMemberProfile({
 
         if (uploadRes.ok) {
           const result = await uploadRes.json();
-          formData.profilePictureLink = result.profilePictureLink;
+          setFormData((prev) => ({
+            ...prev,
+            profilePictureLink: result.profilePictureLink,
+          }));
           toast.success("Profilbild erfolgreich hochgeladen.");
         } else {
           const error = await uploadRes.json();

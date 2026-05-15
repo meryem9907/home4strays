@@ -54,10 +54,19 @@ import {
 
 const router = Router();
 
-const storage = multer.memoryStorage(); // to use buffer
-const uploadToMem = multer({ storage }); // use this for uploading multiple pics
-const uploadToDisk = multer({ dest: "../utils/uploads" });
+const storage = multer.memoryStorage();
+const uploadToMem = multer({ storage });
 const minio = MinioManager.getInstance();
+
+/** Upload in-memory multer file to MinIO (works in Docker; no local disk path). */
+async function uploadBufferToMinio(
+  file: Express.Multer.File,
+  objectKey: string,
+) {
+  await minio.uploadFileFromStream(objectKey, file.buffer, {
+    "Content-Type": file.mimetype,
+  });
+}
 
 /**
  * @route POST /user-profile-pic
@@ -70,7 +79,7 @@ const minio = MinioManager.getInstance();
  */
 router.post(
   "/user-profile-pic",
-  uploadToDisk.single("user-profile-picture"),
+  uploadToMem.single("user-profile-picture"),
   authenticateToken,
   openAPIRoute(
     {
@@ -103,9 +112,7 @@ router.post(
         // include bucket for pet profile pictures with petid in the filename
         const fileExtension = path.extname(profilePicture.originalname);
         const profilePictureFilename = `user-profile-picture/${userId}-profile-pic${fileExtension}`;
-        await minio.uploadFile(profilePictureFilename, profilePicture.path, {
-          "Content-Type": profilePicture.mimetype,
-        });
+        await uploadBufferToMinio(file, profilePictureFilename);
 
         // get Public URL and save path and public url/link to db
         let profilePicPublicURL = await minioManager.getPublicURL(
@@ -187,7 +194,7 @@ router.post(
   "/pet-profile-pic/:id",
   authenticateToken,
   verifyNGO,
-  uploadToDisk.single("pet-profile-picture"),
+  uploadToMem.single("pet-profile-picture"),
   openAPIRoute(
     {
       tag: "pet",
@@ -216,9 +223,7 @@ router.post(
 
         const fileExtension = path.extname(file.originalname);
         const profilePictureFilename = `pet-profile-picture/${petId}-profile-pic${fileExtension}`;
-        await minio.uploadFile(profilePictureFilename, file.path, {
-          "Content-Type": file.mimetype,
-        });
+        await uploadBufferToMinio(file, profilePictureFilename);
 
         const publicURL = await minioManager.getPublicURL(
           profilePictureFilename,
@@ -302,7 +307,7 @@ router.post(
   "/ngo-logo/:ngoId",
   authenticateToken,
   verifyNGOAdmin,
-  uploadToDisk.single("ngo-logo"),
+  uploadToMem.single("ngo-logo"),
   openAPIRoute(
     {
       tag: "ngo",
@@ -327,9 +332,7 @@ router.post(
 
         const fileExtension = path.extname(file.originalname);
         const logoFilename = `ngo-logos/${ngoId}-logo${fileExtension}`;
-        await minio.uploadFile(logoFilename, file.path, {
-          "Content-Type": file.mimetype,
-        });
+        await uploadBufferToMinio(file, logoFilename);
 
         const publicURL = await minioManager.getPublicURL(logoFilename);
         await NGOQueries.updateNgoLogoPic(

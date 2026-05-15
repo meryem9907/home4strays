@@ -77,18 +77,49 @@ export default function CaretakerProfile({
         endTime: appendSeconds(time.to),
       }));
 
-    const updatedData = {
-      ...caretakerData,
-      ctHours: updatedCtHours,
-    };
-
-    setCaretakerData(updatedData);
-
     const token = localStorage.getItem("authToken");
     if (!token) {
       toast.error("Kein Authentifizierungs-Token gefunden.");
       return;
     }
+
+    let profilePictureLink: string | File | null =
+      caretakerData.profilePictureLink ?? null;
+
+    if (profilePictureLink && isFile(profilePictureLink)) {
+      try {
+        const pictureFormData = new FormData();
+        pictureFormData.append("user-profile-picture", profilePictureLink);
+
+        const uploadRes = await fetch("/api/user/picture", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: pictureFormData,
+        });
+
+        if (!uploadRes.ok) {
+          const error = await uploadRes.json();
+          console.error("Fehler beim Bild-Upload:", error);
+          toast.error("Bild konnte nicht hochgeladen werden.");
+          return;
+        }
+
+        const result = await uploadRes.json();
+        profilePictureLink = result.profilePictureLink;
+        toast.success("Profilbild erfolgreich hochgeladen.");
+      } catch (uploadErr) {
+        console.error("Fehler beim Bild-Upload:", uploadErr);
+        toast.error("Fehler beim Bild-Upload.");
+        return;
+      }
+    }
+
+    const updatedData = {
+      ...caretakerData,
+      ctHours: updatedCtHours,
+      profilePictureLink:
+        typeof profilePictureLink === "string" ? profilePictureLink : null,
+    };
 
     try {
       const response = await fetch("/api/caretaker", {
@@ -102,7 +133,6 @@ export default function CaretakerProfile({
           lastName: caretakerData.lastName,
           email: caretakerData.email,
           phoneNumber: caretakerData.phoneNumber,
-          profilePictureLink: caretakerData.profilePictureLink,
           maritalStatus: caretakerData.maritalStatus,
           birthdate: caretakerData.birthdate,
           numberKids: caretakerData.numberKids,
@@ -128,9 +158,10 @@ export default function CaretakerProfile({
       });
 
       if (response.ok) {
-        toast.success("Profil erfolgreich gespeichert.");
+        setCaretakerData(updatedData);
         setOriginalCaretakerData(updatedData);
         setIsEditing(false);
+        toast.success("Profil erfolgreich gespeichert.");
       } else {
         const error = await response.json();
         console.error("Fehler beim Speichern:", error);
@@ -139,43 +170,6 @@ export default function CaretakerProfile({
     } catch (err) {
       console.error("Fehler beim API-Aufruf:", err);
       toast.error("Serverfehler beim Speichern.");
-    }
-
-    // Update Picture
-    if (
-      caretakerData.profilePictureLink &&
-      isFile(caretakerData.profilePictureLink)
-    ) {
-      try {
-        const pictureFormData = new FormData();
-        pictureFormData.append(
-          "user-profile-picture",
-          caretakerData.profilePictureLink
-        );
-
-        const uploadRes = await fetch("/api/user/picture", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          body: pictureFormData,
-        });
-
-        if (uploadRes.ok) {
-          const result = await uploadRes.json();
-          caretakerData.profilePictureLink = result.profilePictureLink;
-          toast.success("Profilbild erfolgreich hochgeladen.");
-        } else {
-          const error = await uploadRes.json();
-          console.error("Fehler beim Bild-Upload:", error);
-          toast.error("Bild konnte nicht hochgeladen werden.");
-          return;
-        }
-      } catch (uploadErr) {
-        console.error("Fehler beim Bild-Upload:", uploadErr);
-        toast.error("Fehler beim Bild-Upload.");
-        return;
-      }
     }
   };
 

@@ -1,7 +1,6 @@
 import { Award, Cake, Heart, User } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Badge from "../ui/badge";
-import Image from "next/image";
 import ImageUpload from "../ui/image-upload";
 import InputField from "../ui/inputfield";
 import { Caretaker } from "@/app/types/backend/caretaker";
@@ -15,8 +14,18 @@ interface Props {
   onInputChange: (key: keyof Caretaker, value: string | boolean | File | null) => void;
 }
 
+function resolveProfileImageSrc(
+  value: string | File | null | undefined,
+): string | null {
+  if (!value) return null;
+  if (typeof value === "string" && value.trim() !== "") return value;
+  if (value instanceof File) return URL.createObjectURL(value);
+  return null;
+}
+
 export default function Header({ data, isCaretakerData = false, isEditing, age, onInputChange }: Props) {
   const t = useTranslations("CaretakerProfile");
+  const profileSrc = resolveProfileImageSrc(data.profilePictureLink);
   
   return (
     <div className="bg-base-100 rounded-2xl shadow-xl mb-8 overflow-hidden border border-neutral">
@@ -50,8 +59,14 @@ export default function Header({ data, isCaretakerData = false, isEditing, age, 
           ) : (
             <>
               <div className="w-32 h-32 rounded-full bg-base-100 backdrop-blur-sm border-4 border-neutral flex items-center justify-center overflow-hidden">
-                {data.profilePictureLink ? (
-                  <Image src={data.profilePictureLink} width={400} height={400} alt="Profilbild" className="w-full h-full object-cover" />
+                {profileSrc ? (
+                  <img
+                    src={profileSrc}
+                    width={128}
+                    height={128}
+                    alt="Profilbild"
+                    className="w-full h-full object-cover"
+                  />
                 ) : (
                   <User className="w-16 h-16 text-neutral" />
                 )}

@@ -60,12 +60,15 @@ services:
         if [ -d /mockdata ] && [ -n "$$(ls -A /mockdata 2>/dev/null)" ]; then
           echo "Uploading mockdata to $$MINIO_BUCKET_NAME/mockdata/ ..."
           mc mirror --overwrite /mockdata/ "local/$$MINIO_BUCKET_NAME/mockdata/"
-          echo "Allowing public read on mockdata/ (dev only)..."
           mc anonymous set download "local/$$MINIO_BUCKET_NAME/mockdata"
           echo "Mockdata upload complete."
         else
           echo "No files in /mockdata; run: node backend/scripts/generate-mockdata-placeholders.mjs"
         fi
+        echo "Allowing public read on upload prefixes (local dev only)..."
+        mc anonymous set download "local/$$MINIO_BUCKET_NAME/user-profile-picture" || true
+        mc anonymous set download "local/$$MINIO_BUCKET_NAME/pet-profile-picture" || true
+        mc anonymous set download "local/$$MINIO_BUCKET_NAME/ngo-logos" || true
     environment:
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin12}
@@ -99,6 +102,7 @@ services:
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin12}
       MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME:-home4strays}
       MINIO_PUBLIC_URL: ${MINIO_PUBLIC_URL:-http://localhost:9000}
+      MINIO_DIRECT_URLS: ${MINIO_DIRECT_URLS:-true}
       PUBLIC_URL: ${PUBLIC_URL:-http://localhost:3000}
       EMAIL: ${EMAIL:-}
       EMAIL_PASSWORD: ${EMAIL_PASSWORD:-}

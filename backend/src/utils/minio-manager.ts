@@ -129,12 +129,22 @@ export default class MinioManager {
    * @param expirationSeconds - Optional expiration time in seconds for the URL.
    * @returns A promise that resolves to the presigned URL string.
    */
+  private normalizeObjectKey(filename: string): string {
+    const bucketPrefix = `${this.bucketName}/`;
+    return filename.startsWith(bucketPrefix)
+      ? filename.slice(bucketPrefix.length)
+      : filename;
+  }
+
   public async getPublicURL(filename: string, expirationSeconds = undefined) {
-    const bucket = getSecret("MINIO_BUCKET_NAME");
-    let objectKey = filename;
-    const bucketPrefix = `${bucket}/`;
-    if (objectKey.startsWith(bucketPrefix)) {
-      objectKey = objectKey.slice(bucketPrefix.length);
+    const bucket = this.bucketName;
+    const objectKey = this.normalizeObjectKey(filename);
+    const publicBase = getSecret("MINIO_PUBLIC_URL").replace(/\/$/, "");
+
+    // Docker/local: presigned URLs are signed for host "minio" but the browser uses
+    // localhost — using direct public URLs instead (requires anonymous read on prefixes).
+    if (getSecret("MINIO_DIRECT_URLS", "false").toLowerCase() === "true") {
+      return `${publicBase}/${bucket}/${objectKey}`;
     }
 
     const presignedUrl = await this.client.presignedGetObject(
@@ -143,33 +153,18 @@ export default class MinioManager {
       expirationSeconds,
     );
 
-    // Build internal base URL using envs
-    const endpoint = getSecret("MINIO_ENDPOINT"); // e.g. home4strays.informatik.tha.de
-    const port = getSecret("MINIO_PORT"); // e.g. 9000
-    const useSSL = getSecret("MINIO_SSL") === "true"; // e.g. true
-
+    const endpoint = getSecret("MINIO_ENDPOINT");
+    const port = getSecret("MINIO_PORT");
+    const useSSL = getSecret("MINIO_SSL") === "true";
     const internalBase = `${useSSL ? "https" : "http"}://${endpoint}:${port}`;
 
-    // Replace with public base URL
-    const publicBase = getSecret("MINIO_PUBLIC_URL"); // e.g. https://s3.home4strays.org
-
-    // Replace base of the URL using standard string replacement
-    const publicUrl = presignedUrl.replace(internalBase, publicBase);
-
-    return publicUrl;
+    return presignedUrl.replace(internalBase, publicBase);
   }
 
   /**
    * Removes a single file from the MinIO bucket.
    * @param filename - The name of the file to delete.
    */
-  private normalizeObjectKey(filename: string): string {
-    const prefix = `${this.bucketName}/`;
-    return filename.startsWith(prefix)
-      ? filename.slice(prefix.length)
-      : filename;
-  }
-
   public async removeFile(filename: string) {
     await this.client.removeObject(
       this.bucketName,

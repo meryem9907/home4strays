@@ -17,7 +17,7 @@ On our site NGOs can sign up to publish stray animals while shelters can sign up
  ![dark.png](dark.png)
 
 
-## Run with Docker (~ 2-3 GB)
+## Run with Docker (~ 2-3GB)
 
 The repository root includes a `docker-compose.yml` that starts PostgreSQL, MinIO, the Express API, the Next.js app, and Adminer.
 
