@@ -130,9 +130,16 @@ export default class MinioManager {
    * @returns A promise that resolves to the presigned URL string.
    */
   public async getPublicURL(filename: string, expirationSeconds = undefined) {
+    const bucket = getSecret("MINIO_BUCKET_NAME");
+    let objectKey = filename;
+    const bucketPrefix = `${bucket}/`;
+    if (objectKey.startsWith(bucketPrefix)) {
+      objectKey = objectKey.slice(bucketPrefix.length);
+    }
+
     const presignedUrl = await this.client.presignedGetObject(
-      await getSecret("MINIO_BUCKET_NAME"),
-      filename,
+      bucket,
+      objectKey,
       expirationSeconds,
     );
 
@@ -156,8 +163,18 @@ export default class MinioManager {
    * Removes a single file from the MinIO bucket.
    * @param filename - The name of the file to delete.
    */
+  private normalizeObjectKey(filename: string): string {
+    const prefix = `${this.bucketName}/`;
+    return filename.startsWith(prefix)
+      ? filename.slice(prefix.length)
+      : filename;
+  }
+
   public async removeFile(filename: string) {
-    await this.client.removeObject(this.bucketName, filename);
+    await this.client.removeObject(
+      this.bucketName,
+      this.normalizeObjectKey(filename),
+    );
   }
 
   /**

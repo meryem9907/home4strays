@@ -6,11 +6,18 @@ import { getSecret } from "../../utils/secret-manager";
 
 const MINIO_PATH = `${getSecret("MINIO_PUBLIC_URL")}/${getSecret("MINIO_BUCKET_NAME")}`;
 
+/** Browser URL for a mock object (encodes spaces etc.). */
+const mockLink = (file: string) =>
+  `${MINIO_PATH}/mockdata/${encodeURIComponent(file)}`;
+
+/** Object key inside the home4strays bucket. */
+const mockPath = (file: string) => `mockdata/${file}`;
+
 class MockDataMigrations {
   createMockData(db: DatabaseManager, migrations: Array<String>) {
     //Caretaker Persona 1: Reife Halterin mit Verantwortung, Platz und Erfahrung
     migrations.push(`INSERT INTO "user" (id, first_name, last_name, email, password, profile_picture_link, profile_picture_path, phone_number)
-                      VALUES ('09a9e1fd-9a74-4f83-b5f6-9e4531a20f4c', 'Claudia', 'Weber', 'claudia.weber@example.com', 'hashed_pw1', '${MINIO_PATH}/mockdata/claudia weber.jpg', 'home4strays/mockdata/claudia weber.jpg', '+4917612345678');`);
+                      VALUES ('09a9e1fd-9a74-4f83-b5f6-9e4531a20f4c', 'Claudia', 'Weber', 'claudia.weber@example.com', 'hashed_pw1', '${mockLink("claudia weber.jpg")}', '${mockPath("claudia weber.jpg")}', '+4917612345678');`);
 
     migrations.push(`INSERT INTO caretaker (
                       user_id, space, experience, tenure, marital_status, financial_assistance, locality_type,
@@ -24,7 +31,7 @@ class MockDataMigrations {
 
     //Caretaker Persona 2: Junger, tierlieber Stadtmensch mit Engagement
     migrations.push(`INSERT INTO "user" (id, first_name, last_name, email, password, profile_picture_link, profile_picture_path, phone_number)
-                      VALUES ('e1e6ce56-e2b1-4f98-a6ec-c7c3c02bc3ec', 'Jonas', 'Berger', 'jonas.berger@example.com', 'hashed_pw2', '${MINIO_PATH}/mockdata/jonas berger.jpg', 'home4strays/mockdata/jonas berger.jpg', '+4915111122233');`);
+                      VALUES ('e1e6ce56-e2b1-4f98-a6ec-c7c3c02bc3ec', 'Jonas', 'Berger', 'jonas.berger@example.com', 'hashed_pw2', '${mockLink("jonas berger.jpg")}', '${mockPath("jonas berger.jpg")}', '+4915111122233');`);
 
     migrations.push(`INSERT INTO caretaker (
                       user_id, space, experience, tenure, marital_status, financial_assistance, locality_type,
@@ -46,14 +53,14 @@ class MockDataMigrations {
 
     //NGO Pfotenhilfe Süd mit NGO Persona
     migrations.push(`INSERT INTO "user" (id, first_name, last_name, email, password, profile_picture_link, profile_picture_path, phone_number)
-                      VALUES ('be2faeb8-59c2-4f85-b983-1a1ff1128cf2', 'Nadine', 'Kunz', 'nadine.kunz@pfotenhilfe.de', 'hashed_pw3', '${MINIO_PATH}/mockdata/nadine kunz.jpg', 'home4strays/mockdata/nadine kunz.jpg', '+497112345678');`);
+                      VALUES ('be2faeb8-59c2-4f85-b983-1a1ff1128cf2', 'Nadine', 'Kunz', 'nadine.kunz@pfotenhilfe.de', 'hashed_pw3', '${mockLink("nadine kunz.jpg")}', '${mockPath("nadine kunz.jpg")}', '+497112345678');`);
 
     migrations.push(`INSERT INTO ngo (
                       id, name, email, country, verification_document_path, verification_document_link,
                       verified, logo_picture_path, logo_picture_link, phone_number, member_count, website, mission
                     ) VALUES (
                       '8f95a9f0-0c2a-4b2e-9ac0-58b8b56cd8b3', 'Pfotenhilfe Süd e.V.', 'kontakt@pfotenhilfe.de', 'Germany',
-                      'home4strays/mockdata/pfotenhilfe_verificationdoc.pdf', '${MINIO_PATH}/mockdata/pfotenhilfe_verificationdoc.pdf', true, 'home4strays/mockdata/pfotenhilfesued.jpg', '${MINIO_PATH}/mockdata/pfotenhilfesued.jpg',
+                      'mockdata/pfotenhilfe_verificationdoc.pdf', '${MINIO_PATH}/mockdata/pfotenhilfe_verificationdoc.pdf', true, 'mockdata/pfotenhilfesued.jpg', '${MINIO_PATH}/mockdata/pfotenhilfesued.jpg',
                       '+497112345678', 12, '{"https://pfotenhilfe-sued.de"}', 'We rescue animals from difficult situations and lovingly rehome them.'
                     );`);
 
@@ -67,7 +74,7 @@ class MockDataMigrations {
                       house_number, locality_type_requirement, kids_allowed, experience_requirement, minimum_space_requirement
                     ) VALUES (
                       '1c9d7d83-851e-4292-9c9e-749e416b9e30', 'Luna', 'Female', '2021-03-12', true, 18.5, 'Labrador Retriever',
-                      '${MINIO_PATH}/mockdata/luna.jpg', 'home4strays/mockdata/luna.jpg', '2024-12-01', 'normal', 'playful',
+                      '${MINIO_PATH}/mockdata/luna.jpg', 'mockdata/luna.jpg', '2024-12-01', 'normal', 'playful',
                       'be2faeb8-59c2-4f85-b983-1a1ff1128cf2', 'Birkenweg', 'Ulm', '89073', 'Germany',
                       '12', 'Rural', true, '>2 Years', 80
                     );`);
@@ -78,7 +85,7 @@ class MockDataMigrations {
                       house_number, locality_type_requirement, kids_allowed, experience_requirement, minimum_space_requirement
                     ) VALUES (
                       '80ae6659-fab4-4a34-83cd-df2dbfcd6e1b', 'Max', 'Male', '2019-07-04', true, 24.0, 'Golden Retriever',
-                      '${MINIO_PATH}/mockdata/max.jpg', 'home4strays/mockdata/max.jpg', '2025-01-10', 'greedy', 'obedient',
+                      '${MINIO_PATH}/mockdata/max.jpg', 'mockdata/max.jpg', '2025-01-10', 'greedy', 'obedient',
                       'be2faeb8-59c2-4f85-b983-1a1ff1128cf2', 'Lindenallee', 'Ravensburg', '88212', 'Germany',
                       '8', 'Urban', true, '>5 Years', 100
                     );`);
@@ -89,7 +96,7 @@ class MockDataMigrations {
                       house_number, locality_type_requirement, kids_allowed, experience_requirement, minimum_space_requirement
                     ) VALUES (
                       '14b339ae-dc2c-4d8a-b25c-4b89d2226f51', 'Mimi', 'Female', '2020-10-01', true, 4.2, 'Siamese',
-                      '${MINIO_PATH}/mockdata/mimi.jpg', 'home4strays/mockdata/mimi.jpg', '2025-02-15', 'selective', 'shy',
+                      '${MINIO_PATH}/mockdata/mimi.jpg', 'mockdata/mimi.jpg', '2025-02-15', 'selective', 'shy',
                       'be2faeb8-59c2-4f85-b983-1a1ff1128cf2', 'Feldstraße', 'Konstanz', '78462', 'Germany',
                       '3', 'Urban', false, '>1 Year', 30
                     );`);
@@ -100,21 +107,21 @@ class MockDataMigrations {
                       house_number, locality_type_requirement, kids_allowed, experience_requirement, minimum_space_requirement
                     ) VALUES (
                       'bc3f7a2e-7753-4b3a-9fd4-0169cf5f4dc9', 'Rocky', 'Male', '2018-05-22', true, 28.0, 'Rottweiler',
-                      '${MINIO_PATH}/mockdata/rocky.jpg', 'home4strays/mockdata/rocky.jpg', '2024-11-20', 'normal', 'vigilant',
+                      '${MINIO_PATH}/mockdata/rocky.jpg', 'mockdata/rocky.jpg', '2024-11-20', 'normal', 'vigilant',
                       'be2faeb8-59c2-4f85-b983-1a1ff1128cf2', 'Schulweg', 'Freiburg', '79098', 'Germany',
                       '15', 'Rural', false, '>10 Years', 120
                     );`);
 
     //NGO Tierschutz Nordlicht mit NGO Persona
     migrations.push(`INSERT INTO "user" (id, first_name, last_name, email, password, profile_picture_link, profile_picture_path, phone_number)
-                      VALUES ('f2a88914-f3a2-438e-90bb-d2c50a60f86e', 'Leon', 'Fischer', 'leon.fischer@ts-nordlicht.de', 'hashed_pw4', '${MINIO_PATH}/mockdata/leon fischer.jpg', 'home4strays/mockdata/leon fischer.jpg', '+494012345679');`);
+                      VALUES ('f2a88914-f3a2-438e-90bb-d2c50a60f86e', 'Leon', 'Fischer', 'leon.fischer@ts-nordlicht.de', 'hashed_pw4', '${mockLink("leon fischer.jpg")}', '${mockPath("leon fischer.jpg")}', '+494012345679');`);
 
     migrations.push(`INSERT INTO ngo (
                       id, name, email, country, verification_document_path, verification_document_link,
                       verified, logo_picture_path, logo_picture_link, phone_number, member_count, website, mission
                     ) VALUES (
                       '3c20f20a-40d0-4b56-b246-b0dc6c9837d2', 'Tierschutz Nordlicht e.V.', 'kontakt@ts-nordlicht.de', 'Germany',
-                      'home4strays/mockdata/nordlicht_verificationdoc.pdf', 'http://home4strays.informatik.tha.de:9001/browser/home4strays/mockdata%2Fnordlicht_verificationdoc.pdf', true, 'home4strays/mockdata/nordlicht.png', '${MINIO_PATH}/mockdata/nordlicht.png',
+                      'mockdata/nordlicht_verificationdoc.pdf', 'http://home4strays.informatik.tha.de:9001/browser/home4strays/mockdata%2Fnordlicht_verificationdoc.pdf', true, 'mockdata/nordlicht.png', '${MINIO_PATH}/mockdata/nordlicht.png',
                       '+494012345679', 9, '{"https://ts-nordlicht.de"}', 'We help neglected animals in the north find a new home.'
                     );`);
 
@@ -128,7 +135,7 @@ class MockDataMigrations {
                       house_number, locality_type_requirement, kids_allowed, experience_requirement, minimum_space_requirement
                     ) VALUES (
                       '95f6f237-1cd6-445b-9d06-03e5d527c404', 'Bella', 'Female', '2020-06-20', true, 16.0, 'Beagle',
-                      '${MINIO_PATH}/mockdata/bella.jpg', 'home4strays/mockdata/bella.jpg', '2025-02-12', 'normal', 'lively',
+                      '${MINIO_PATH}/mockdata/bella.jpg', 'mockdata/bella.jpg', '2025-02-12', 'normal', 'lively',
                       'f2a88914-f3a2-438e-90bb-d2c50a60f86e', 'Wiesenweg', 'Kiel', '24103', 'Germany',
                       '7', 'Other', true, '>2 Years', 60
                     );`);
@@ -139,7 +146,7 @@ class MockDataMigrations {
                       house_number, locality_type_requirement, kids_allowed, experience_requirement, minimum_space_requirement
                     ) VALUES (
                       '2ec3ef0a-e62b-44ec-8329-9b69e9e3929b', 'Charly', 'Male', '2017-03-18', true, 7.8, 'Maine Coon',
-                      '${MINIO_PATH}/mockdata/charly.jpg', 'home4strays/mockdata/charly.jpg', '2024-10-01', 'greedy', 'lazy',
+                      '${MINIO_PATH}/mockdata/charly.jpg', 'mockdata/charly.jpg', '2024-10-01', 'greedy', 'lazy',
                       'f2a88914-f3a2-438e-90bb-d2c50a60f86e', 'Hafenstraße', 'Lübeck', '23552', 'Germany',
                       '19', 'Urban', true, '>1 Year', 40
                     );`);
@@ -150,7 +157,7 @@ class MockDataMigrations {
                       house_number, locality_type_requirement, kids_allowed, experience_requirement, minimum_space_requirement
                     ) VALUES (
                       'd7cb41b3-7f23-4d39-8a13-bbf73ea05e9f', 'Nala', 'Female', '2022-01-10', false, 13.5, 'Border Collie',
-                      '${MINIO_PATH}/mockdata/nala.jpg', 'home4strays/mockdata/nala.jpg', '2025-03-01', 'selective', 'defensive',
+                      '${MINIO_PATH}/mockdata/nala.jpg', 'mockdata/nala.jpg', '2025-03-01', 'selective', 'defensive',
                       'f2a88914-f3a2-438e-90bb-d2c50a60f86e', 'Moorweg', 'Flensburg', '24937', 'Germany',
                       '10b', 'Rural', true, '>5 Years', 90
                     );`);
@@ -161,7 +168,7 @@ class MockDataMigrations {
                       house_number, locality_type_requirement, kids_allowed, experience_requirement, minimum_space_requirement
                     ) VALUES (
                       'b85b8c94-24e1-45b6-a3ff-3a1e3f871b77', 'Simba', 'Male', '2021-09-08', true, 5.2, 'Bengal',
-                      '${MINIO_PATH}/mockdata/simba.png', 'home4strays/mockdata/simba.png', '2025-01-25', 'normal', 'cautious',
+                      '${MINIO_PATH}/mockdata/simba.png', 'mockdata/simba.png', '2025-01-25', 'normal', 'cautious',
                       'f2a88914-f3a2-438e-90bb-d2c50a60f86e', 'Nordstraße', 'Hamburg', '20095', 'Germany',
                       '23', 'Urban', false, '>2 Years', 30
                     );`);
@@ -181,9 +188,9 @@ class MockDataMigrations {
     //PetPicture
     migrations.push(`INSERT INTO pet_picture
                       (pet_id, picture_path, picture_link) VALUES
-                      ('1c9d7d83-851e-4292-9c9e-749e416b9e30', 'home4strays/mockdata/luna2.jpg',  '${MINIO_PATH}/mockdata/luna2.jpg'),
-                      ('80ae6659-fab4-4a34-83cd-df2dbfcd6e1b', 'home4strays/mockdata/max2.jpg', '${MINIO_PATH}/mockdata/max2.jpg'),
-                      ('95f6f237-1cd6-445b-9d06-03e5d527c404', 'home4strays/mockdata/bella2.jpg', '${MINIO_PATH}/mockdata/bella2.jpg');`);
+                      ('1c9d7d83-851e-4292-9c9e-749e416b9e30', 'mockdata/luna2.jpg',  '${MINIO_PATH}/mockdata/luna2.jpg'),
+                      ('80ae6659-fab4-4a34-83cd-df2dbfcd6e1b', 'mockdata/max2.jpg', '${MINIO_PATH}/mockdata/max2.jpg'),
+                      ('95f6f237-1cd6-445b-9d06-03e5d527c404', 'mockdata/bella2.jpg', '${MINIO_PATH}/mockdata/bella2.jpg');`);
 
     //PetVaccination
     migrations.push(`INSERT INTO pet_vaccination
@@ -343,7 +350,7 @@ class MockDataMigrations {
     );
   }
 
-  /*   async insertPublicURLs(db: DatabaseManager) {
+  async insertPublicURLs(db: DatabaseManager) {
     const minio = MinioManager.getInstance();
 
     // User aktualisieren
@@ -425,7 +432,7 @@ class MockDataMigrations {
       }
     }
   }
- */
+
   async migrate(db: DatabaseManager) {
     console.log(
       cyan(
@@ -442,7 +449,6 @@ class MockDataMigrations {
 
     try {
       await db.executeTransaction(mockDataMigrations, []);
-      //await this.insertPublicURLs(db);
     } catch (e) {
       console.error(
         red(
@@ -462,6 +468,20 @@ class MockDataMigrations {
         ),
       ),
     );
+
+    try {
+      await this.insertPublicURLs(db);
+    } catch (e) {
+      console.error(
+        red(
+          emoji.emojify(
+            ":warning: [Migrations] Mock data inserted but could not refresh MinIO URLs: " +
+              e,
+            { fallback: "" },
+          ),
+        ),
+      );
+    }
   }
 
   async rollback(db: DatabaseManager) {

@@ -1,0 +1,135 @@
+# Full stack: Postgres, MinIO, API, Next.js frontend.
+#
+# Quick start:
+#   1. cp .env.docker.example .env
+#   2. Set TOKEN_SECRET in .env (see backend README for generating one)
+#   3. docker compose up --build
+#
+# URLs (defaults): app http://localhost:3000  API http://localhost:3100
+# MinIO S3 API http://localhost:9000  MinIO console http://localhost:9001
+# Adminer http://localhost:3400  (System: PostgreSQL, Server: db, user/db from .env)
+
+name: home4strays
+
+services:
+  db:
+    image: postgres:17
+    restart: unless-stopped
+    shm_size: 128mb
+    environment:
+      POSTGRES_USER: ${DB_USER:-home4strays}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-home4strays}
+      POSTGRES_DB: ${DB_DATABASE:-home4strays}
+    ports:
+      - "${POSTGRES_PUBLISH_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin12}
+    ports:
+      - "${MINIO_API_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - minio_data:/data
+
+  # One-shot: upload backend/mockdata/* → MinIO bucket home4strays/mockdata/
+  # (inline script avoids Windows CRLF breaking a mounted .sh file)
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_started
+    volumes:
+      - ./backend/mockdata:/mockdata:ro
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -eu
+        echo "Waiting for MinIO..."
+        until mc alias set local http://minio:9000 "$$MINIO_ACCESS_KEY" "$$MINIO_SECRET_KEY" 2>/dev/null; do sleep 2; done
+        mc mb -p "local/$$MINIO_BUCKET_NAME" 2>/dev/null || true
+        if [ -d /mockdata ] && [ -n "$$(ls -A /mockdata 2>/dev/null)" ]; then
+          echo "Uploading mockdata to $$MINIO_BUCKET_NAME/mockdata/ ..."
+          mc mirror --overwrite /mockdata/ "local/$$MINIO_BUCKET_NAME/mockdata/"
+          echo "Allowing public read on mockdata/ (dev only)..."
+          mc anonymous set download "local/$$MINIO_BUCKET_NAME/mockdata"
+          echo "Mockdata upload complete."
+        else
+          echo "No files in /mockdata; run: node backend/scripts/generate-mockdata-placeholders.mjs"
+        fi
+    environment:
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin12}
+      MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME:-home4strays}
+    restart: "no"
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    ports:
+      - "${BACKEND_PUBLISH_PORT:-3100}:3100"
+    environment:
+      NODE_ENV: production
+      PORT: "3100"
+      DB_HOST: db
+      DB_USER: ${DB_USER:-home4strays}
+      DB_PASSWORD: ${DB_PASSWORD:-home4strays}
+      DB_DATABASE: ${DB_DATABASE:-home4strays}
+      TOKEN_SECRET: ${TOKEN_SECRET:?Set TOKEN_SECRET in .env — see .env.docker.example}
+      MINIO_ENDPOINT: minio
+      MINIO_PORT: "9000"
+      MINIO_SSL: "false"
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin12}
+      MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME:-home4strays}
+      MINIO_PUBLIC_URL: ${MINIO_PUBLIC_URL:-http://localhost:9000}
+      PUBLIC_URL: ${PUBLIC_URL:-http://localhost:3000}
+      EMAIL: ${EMAIL:-}
+      EMAIL_PASSWORD: ${EMAIL_PASSWORD:-}
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "${FRONTEND_PUBLISH_PORT:-3000}:3000"
+    environment:
+      NODE_ENV: production
+      HOSTNAME: "0.0.0.0"
+      PORT: "3000"
+      # Next.js API routes call the backend from inside this container (Docker DNS).
+      BACKEND_URL: ${BACKEND_URL:-http://backend:3100}
+
+  adminer:
+    image: adminer:5
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${ADMINER_PUBLISH_PORT:-3400}:8080"
+
+volumes:
+  postgres_data:
+  minio_data:

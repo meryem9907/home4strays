@@ -4,7 +4,7 @@
 
 ### Install Nodejs (version 23.11.0)
 
-- Linux (Debian/Ubuntu) über nvm mit npm (wer was anderes möchte: https://nodejs.org/en/download)
+- Linux (Debian/Ubuntu) over nvm with npm 
 
   ```
   sudo apt update
@@ -27,7 +27,7 @@
 
   ```
 
-- Windows über fnm mit npm (wer was anderes möchte: https://nodejs.org/en/download)
+- Windows over fnm mwithit npm 
 
   - In Windows Powershell:
 

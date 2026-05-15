@@ -1,5 +1,14 @@
+function useDirectUrl(src) {
+  return (
+    src.startsWith("http://home4strays.informatik.tha.de") ||
+    src.startsWith("http://localhost:9000") ||
+    src.startsWith("http://127.0.0.1:9000") ||
+    src.startsWith("https://s3.home4strays.org")
+  );
+}
+
 export default function customImageLoader({src, width, quality}) {
-  if (src.startsWith("http://home4strays.informatik.tha.de")) {
+  if (useDirectUrl(src)) {
     return src;
   }
 
