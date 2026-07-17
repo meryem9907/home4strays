@@ -5,21 +5,24 @@ On our site NGOs can sign up to publish stray animals while shelters can sign up
 
 ## Current features:
 - ✨ search, filter 
-![search.png](search.png)
+![search.png](./images/search.png)
 - ✨ bookmarking
-![bookmark.png](bookmark.png)
+![bookmark.png](./images/bookmark.png)
 - ✨ maintainance of ngo and shelter profiles
-![profile.png](profile.png)
+![profile.png](./images/profile.png)
 - ✨ verification of ngos by developers via document
 - ✨ multilingual: english, german, turkish
-![de.png](de.png)
-![tr.png](tr.png)
+![de.png](./images/de.png)
+![tr.png](./images/tr.png)
 - ✨ responsive design
+![tr.png](./images/mobile.png)
 - ✨ light-darkmode
- ![dark.png](dark.png)
+ ![dark.png](./images/dark.png)
 
 
-## Run with Docker (~ 2-3GB)
+
+
+## Run with Docker (~ 2-3 GB)
 
 The repository root includes a `docker-compose.yml` that starts PostgreSQL, MinIO, the Express API, the Next.js app, and Adminer.
 

@@ -130,6 +130,16 @@ export default function Navbar() {
       </div>
       <div className="navbar-end md:flex-grow">
         <div className="gap-3 justify-end hidden md:flex flex-nowrap">
+          {/* permissions.canAccessMatches */ false? (
+            <Link href="/matches">
+              <Button label={t("matches")} color="ghost" bordered={pathname.includes("/matches")} />
+            </Link>
+          ):
+          (
+            <Link href="/login">
+              <Button label={t("matches")} color="ghost" />
+            </Link>
+          )}
           <Link href="/animals">
             <Button label={t("animals")} color="ghost" bordered={pathname.includes("/animals")} />
           </Link>

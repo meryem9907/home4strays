@@ -18,6 +18,7 @@ interface ButtonProps {
   type?: "button" | "submit" | "reset";
   deleteHover?: boolean;
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  optional?: string
 }
 
 export default function Button({
@@ -35,6 +36,7 @@ export default function Button({
   type = "submit",
   deleteHover = false,
   onClick,
+  optional = "",
 }: ButtonProps) {
   const [isHovering, setIsHovering] = useState(false);
 
@@ -84,7 +86,9 @@ export default function Button({
       className={`btn ${colorClass} ${sizeClass} ${shapeClass} ${roundedClass} ${fullWidthClass} 
       ${widthClass} ${softClass} ${bordered} ${
         disabled ? "btn-disabled" : ""
-      } `}
+      } 
+      ${optional}
+      `}
       aria-label={arialabel}
       type={type}
       onClick={onClick}

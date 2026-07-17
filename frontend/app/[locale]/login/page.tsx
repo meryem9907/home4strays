@@ -8,6 +8,7 @@ import {useAuth} from "../../../contexts/AuthContext";
 import toast from "react-hot-toast";
 import Box from "@/app/components/ui/box";
 import InputField from "@/app/components/ui/validation/inputfield";
+import SideCard from "@/app/components/ui/side-card";
 
 export default function Login() {
   const t = useTranslations("Login");
@@ -83,8 +84,12 @@ export default function Login() {
   };
 
   return (
-    <Box size="sm">
-      <div className="card-body">
+
+
+          <SideCard image={{src: "/Login/login-image.png", alt: "Color Pane", width: 1000, height: 3400}} size="lg">
+
+      <div className="card-body ">
+
         <p className="card-title justify-center text-3xl text-primary font-bold pb-5">{t("title")}</p>
         <form className="space-y-4" onSubmit={handleSubmit} noValidate>
           <InputField
@@ -128,7 +133,8 @@ export default function Login() {
             </Link>
           </p>
         </div>
-      </div>
-    </Box>
+      </div> </SideCard>
+
+   
   );
 }

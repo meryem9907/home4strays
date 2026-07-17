@@ -16,6 +16,7 @@ import Dock from "../components/ui/dock";
 import { BookmarkProvider } from "@/contexts/BookmarkContext";
 import DataProt from "../components/ui/dataprot";
 import { ProfileCompletionPrompt } from "../components/profile/ProfileCompletionPrompt";
+import MatchBtn from "../components/ui/match-btn";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -58,6 +59,7 @@ export default async function LocaleLayout({ children, params }: Props) {
                         <Navbar />
                         <div className="flex-1 overflow-y-auto">
                           {children}
+                          <MatchBtn />
                           <Dock />
                         </div>
                         <div className="overflow-hidden">

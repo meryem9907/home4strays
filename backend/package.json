@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "ts-node-dev --respawn --transpile-only src/start.ts",
+    "start": "ts-node-dev --respawn --transpile-only src/start.ts --port 3001",
     "start-dev": "ts-node-dev --respawn src/start.ts",
     "clean": "rm -rf ./dist",
     "build": "npm run clean && tsc --outDir ./dist && cp -r ./src/views ./src/utils ./src/public ./dist",

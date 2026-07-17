@@ -14,7 +14,7 @@ export default function Dock() {
 
   const pathname = usePathname();
   return (
-    <div className="dock bg-neutral/95 z-40 h-16 md:hidden">
+    <div className="dock bg-neutral/95 z-40 h-16 md:hidden bottom-4">
       <Link href="/animals" className={pathname.includes("animals") ? "dock-active" : ""}>
         <Dog />
         <span className="dock-label">{t("animals")}</span>

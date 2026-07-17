@@ -62,20 +62,13 @@
 ### Prepare a .env file
 
 - Token Secret
-  In order to encrypt and decrypt JWT-Tokens you need a secret. Go into your home directory and do the following things.
+  In order to encrypt and decrypt JWT-Tokens you need a secret. Go into your backend directory and do the following things.
 
-  - create a temp.js file with this content:
-
-    ```
-    console.log(require('crypto').randomBytes(64).toString('hex'))
-    ```
-
-  - in the same directory run from the cli:
+  - run from the terminal
 
     ```
-    node temp.js
+    node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 
-    // output: 9f26e402586e2faa8da4c98a35f1b20d6b033c60...
     ```
 
   - copy the secret
@@ -86,11 +79,9 @@
     TOKEN_SECRET=""
     ```
 
-  - you may delete the temp.js. It was only neccessary to generate the secret
-
 ### Setup Database
 
-- Install Docker or Podman
+- Install Docker 
 - Run
 
 ```bash

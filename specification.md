@@ -1,5 +1,5 @@
 # Description 
-Home4Strays is a platform where caretakers and stray animals (published by NGOs) can connect and be matched via a Tinderlike Matching algorithm. It should ease and fasten the adoption process.
+Match4Strays is a platform where caretakers and stray animals (published by NGOs) can connect and be matched via a Tinderlike Matching algorithm. It should ease and fasten the adoption process.
 
 # Scope 
 1. Must-have
@@ -33,16 +33,21 @@ Home4Strays is a platform where caretakers and stray animals (published by NGOs)
 - Deployment: Vercel + Render/Railway/Fly.io or AWS
 
 # MVP
-- Swipe throught matched results as caretaker and ngo member
+- login as a caretaker and ngo
+- create animals that show up in search request
 
 # Sprints
-- 1. 24.06 - 01.07
-- Create a design with tinder effect in figma
-- init repo and create project boilerplate
-2. 02.07 - 08.07
-- implement frontend
-3. 08.07 - 15.07
-- implement backend
-4. 15.07 - 22.07 
-- test and deploy 
-- draft an UML-diagramm and create an architecture sketch
+1. 10.07 - 16.07
+- create mvp
+- make it deployable
+2. 17.07 - 30.07
+- swipe feature 
+- show recommended animals with like or dislike feature
+3. 31.07 - 13.08
+- save animals to list
+- enhance accessibility, responsiveness and performance (checklist?)
+4. 14.08 - 22.08 
+- unit test, integration test, e2e tests
+
+TODO:
+-> mobile versin: match button should slide to screen, make it conditionally visible
